@@ -1,0 +1,40 @@
+import type { InvokeResult } from '../types.js';
+import { ClaudeSDKAgent } from './claude-sdk.js';
+import { CodexCLIAgent } from './codex-cli.js';
+import { TestAgent } from './test.js';
+
+/**
+ * The interface to the various ways we have of running agents
+ */
+export interface Agent {
+  invoke: (prompt: string) => Promise<InvokeResult>;
+}
+
+export const DEFAULT_AGENT = 'default';
+
+/**
+ * To add a new agent, add its creator function here
+ */
+const agentConstructors = {
+  [DEFAULT_AGENT]: CodexCLIAgent,
+  [ClaudeSDKAgent.name]: ClaudeSDKAgent,
+  [CodexCLIAgent.name]: CodexCLIAgent,
+  [TestAgent.name]: TestAgent,
+} satisfies Record<string, new () => Agent>;
+
+/**
+ * Enable TypeScript to know what agents are available
+ */
+export type AgentType = keyof typeof agentConstructors;
+
+/**
+ * Enable the command line to know what agents are available
+ */
+export const agentTypes = Object.keys(agentConstructors);
+
+/**
+ * Allow easy switching between different agent types
+ */
+export function createAgent(type: AgentType = DEFAULT_AGENT): Agent {
+  return new agentConstructors[type]();
+}
