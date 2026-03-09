@@ -1,0 +1,16 @@
+
+.DS_Store
+*.swp
+*.tmp
+.*.gz
+*.idlk
+npm-debug.log
+yarn.lock
+/.idea/workspace.xml
+
+/ignore/
+/IGNORE.md
+
+node_modules
+**/dist/**
+tsconfig.tsbuildinfo

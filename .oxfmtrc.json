@@ -1,0 +1,19 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "arrowParens": "avoid",
+  "ignorePatterns": [
+    ".claude/settings.local.json",
+    ".vscode",
+    "cache",
+    "ignore",
+    "node_modules",
+    "pnpm-lock.yaml",
+    "**/*.md"
+  ],
+  "printWidth": 80,
+  "semi": true,
+  "sortPackageJson": false,
+  "singleQuote": true,
+  "tabWidth": 2,
+  "trailingComma": "all"
+}
