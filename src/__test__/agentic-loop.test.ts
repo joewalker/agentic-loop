@@ -1,4 +1,4 @@
-import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -6,6 +6,7 @@ import { agenticLoop } from 'agentic-loop';
 import type { Prompt, PromptGenerator } from 'agentic-loop';
 import { TestAgent } from 'agentic-loop/agents/test';
 import { Git } from 'agentic-loop/git';
+import { Report } from 'agentic-loop/report';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { LoopState } from '../loop-state.js';
@@ -227,5 +228,37 @@ describe('main', () => {
       promptGenerator,
     });
     expect(result).toBe('Done');
+  });
+
+  it('should keep the prompt outstanding if writing the report fails', async () => {
+    const agent = new TestAgent();
+    agent.setNextInvokeResult({ status: 'success', output: 'review of a' });
+
+    const promptGenerator = new FixedPromptGenerator([
+      { id: 'a.ts', prompt: 'Review a' },
+    ]);
+
+    vi.spyOn(Report.prototype, 'append').mockRejectedValue(
+      new Error('disk full'),
+    );
+
+    await expect(
+      runMainWithFakeTimers({
+        name: 'report-write-failure',
+        agent,
+        outputDir: repoPath,
+        promptGenerator,
+      }),
+    ).rejects.toThrow('disk full');
+
+    const raw = await readFile(
+      join(repoPath, 'report-write-failure-loop-state.json'),
+      'utf-8',
+    );
+    expect(JSON.parse(raw)).toEqual({
+      completed: [],
+      failed: [],
+      inProgress: 'a.ts',
+    });
   });
 });

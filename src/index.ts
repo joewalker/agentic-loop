@@ -18,3 +18,4 @@ export {
   createPromptGenerator,
   promptGeneratorTypes,
 } from './prompt-generators/prompt-generators.js';
+export { Report } from './report.js';
