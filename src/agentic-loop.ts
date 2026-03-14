@@ -8,6 +8,7 @@ import {
   createPromptGenerator,
   type PromptGenerator,
 } from './prompt-generators/prompt-generators.js';
+import { Report } from './report.js';
 import type { AgenticLoopCliConfig } from './types.js';
 
 /**
@@ -88,6 +89,9 @@ async function agenticLoopImpl(config: AgenticLoopConfig): Promise<string> {
   const path = join(outputDir, `${name}-loop-state.json`);
   const loopState = await LoopState.create(path);
 
+  const reportPath = join(outputDir, `${name}-report.yaml`);
+  const report = new Report(reportPath);
+
   let completed = 0;
   let glitchCount = 0;
   for await (const prompt of promptGenerator.generate(loopState)) {
@@ -95,6 +99,7 @@ async function agenticLoopImpl(config: AgenticLoopConfig): Promise<string> {
     await loopState.begin(prompt.id);
 
     const result = await agent.invoke(prompt.prompt);
+    await report.append(prompt, result);
     await loopState.end(prompt.id, result);
 
     if (result.status === 'success') {
