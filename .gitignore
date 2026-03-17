@@ -7,11 +7,13 @@
 npm-debug.log
 yarn.lock
 /.idea/workspace.xml
+tsconfig.tsbuildinfo
 
-/ignore/
 /IGNORE.md
 /WIP.md
+/.claude/worktrees
+
+/ignore/
 
 node_modules
 **/dist/**
-tsconfig.tsbuildinfo

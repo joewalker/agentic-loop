@@ -189,6 +189,7 @@ export default [
       'cache/**',
       'ignore/**',
       '**/dist/**',
+      '.claude/worktrees/**',
       './eslint.config.mjs',
       './vitest.config.ts',
     ],

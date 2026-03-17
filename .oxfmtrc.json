@@ -3,6 +3,7 @@
   "arrowParens": "avoid",
   "ignorePatterns": [
     ".claude/settings.local.json",
+    ".claude/worktrees",
     ".vscode",
     "cache",
     "ignore",

@@ -11,12 +11,12 @@ export default defineConfig({
   test: {
     globals: true,
     include: ['**/__test__/**/*.test.ts'],
-    exclude: ['**/node_modules/**', '**/dist/**'],
+    exclude: ['**/node_modules/**', '**/dist/**', '**/.claude/worktrees/**'],
     coverage: {
       provider: 'v8',
       reporter: ['html', 'json', 'json-summary'],
       reportsDirectory: 'cache/test-coverage',
-      exclude: ['node_modules', '__test__/**'],
+      exclude: ['**/node_modules/**', '**/dist/**', '**/.claude/worktrees/**'],
     },
   },
 });
