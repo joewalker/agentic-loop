@@ -11,7 +11,7 @@ import {
   DEFAULT_REPORTER,
   type Reporter,
 } from './reporters/report.js';
-import type { AgenticLoopCliConfig } from './types.js';
+import type { AgenticLoopCliConfig, OutputSchema } from './types.js';
 import { expandIncludes } from './util/expand-includes.js';
 import { Git } from './util/git.js';
 import { LoopState } from './util/loop-state.js';
@@ -45,6 +45,7 @@ export async function agenticLoop(
     maxTurns = Infinity,
     interPromptPause = PAUSE_SECS,
     systemPrompt,
+    outputSchema,
   } = config;
 
   const resolvedSystemPrompt =
@@ -68,6 +69,7 @@ export async function agenticLoop(
     ...(resolvedSystemPrompt !== undefined
       ? { systemPrompt: resolvedSystemPrompt }
       : {}),
+    ...(outputSchema !== undefined ? { outputSchema } : {}),
   });
 }
 
@@ -84,6 +86,7 @@ interface AgenticLoopConfig {
   readonly maxTurns: number;
   readonly interPromptPause: number;
   readonly systemPrompt?: string;
+  readonly outputSchema?: OutputSchema;
 }
 
 /**
@@ -99,6 +102,7 @@ async function agenticLoopImpl(config: AgenticLoopConfig): Promise<string> {
     maxTurns,
     interPromptPause,
     systemPrompt,
+    outputSchema,
   } = config;
 
   const git = new Git(process.cwd());
@@ -118,7 +122,10 @@ async function agenticLoopImpl(config: AgenticLoopConfig): Promise<string> {
     console.log(`Processing: ${prompt.id}`);
     await loopState.begin(prompt.id);
 
-    const result = await agent.invoke(prompt.prompt, systemPrompt);
+    const result = await agent.invoke(prompt.prompt, {
+      ...(systemPrompt !== undefined ? { systemPrompt } : {}),
+      ...(outputSchema !== undefined ? { outputSchema } : {}),
+    });
     await reporter.append(prompt, result);
     await loopState.end(prompt.id, result);
 

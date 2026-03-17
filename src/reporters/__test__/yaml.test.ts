@@ -156,6 +156,44 @@ describe('Report', () => {
     expect(content).toContain('  result one\n\n  result two');
   });
 
+  it('should include structuredOutput when present on success', async () => {
+    const report = await YamlReporter.create(
+      join(tempDir, 'structured-report'),
+    );
+    await report.append(
+      { id: 'structured.ts', prompt: 'Analyze' },
+      {
+        status: 'success',
+        output: 'text output',
+        structuredOutput: { found: true, files: { 'a.ts': 'bug' } },
+      },
+    );
+
+    const content = await readFile(
+      join(tempDir, 'structured-report.yaml'),
+      'utf-8',
+    );
+    expect(content).toContain('structuredOutput: |');
+    expect(content).toContain('"found": true');
+    expect(content).toContain('"a.ts": "bug"');
+  });
+
+  it('should omit structuredOutput when not present on success', async () => {
+    const report = await YamlReporter.create(
+      join(tempDir, 'no-structured-report'),
+    );
+    await report.append(
+      { id: 'plain.ts', prompt: 'Review' },
+      { status: 'success', output: 'all good' },
+    );
+
+    const content = await readFile(
+      join(tempDir, 'no-structured-report.yaml'),
+      'utf-8',
+    );
+    expect(content).not.toContain('structuredOutput');
+  });
+
   it('should quote the id field for YAML safety', async () => {
     const report = await YamlReporter.create(
       join(tempDir, 'special-id-report'),

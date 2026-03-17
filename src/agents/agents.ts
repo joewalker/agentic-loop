@@ -1,13 +1,21 @@
-import type { InvokeResult } from '../types.js';
+import type { InvokeResult, OutputSchema } from '../types.js';
 import { ClaudeSDKAgent } from './claude-sdk.js';
 import { CodexCLIAgent } from './codex-cli.js';
 import { TestAgent } from './test.js';
 
 /**
+ * Options passed to `Agent.invoke()` alongside the prompt.
+ */
+export interface InvokeOptions {
+  readonly systemPrompt?: string;
+  readonly outputSchema?: OutputSchema;
+}
+
+/**
  * The interface to the various ways we have of running agents
  */
 export interface Agent {
-  invoke: (prompt: string, systemPrompt?: string) => Promise<InvokeResult>;
+  invoke: (prompt: string, options?: InvokeOptions) => Promise<InvokeResult>;
 }
 
 export const DEFAULT_AGENT = 'default';

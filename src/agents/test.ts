@@ -1,5 +1,5 @@
 import type { InvokeResult } from '../types.js';
-import type { Agent } from './agents.js';
+import type { Agent, InvokeOptions } from './agents.js';
 
 /**
  * A test implementation of the Agent interface allows us to insert test
@@ -13,7 +13,10 @@ export class TestAgent implements Agent {
     this.#results = results;
   }
 
-  async invoke(_prompt: string, _systemPrompt?: string): Promise<InvokeResult> {
+  async invoke(
+    _prompt: string,
+    _options?: InvokeOptions,
+  ): Promise<InvokeResult> {
     const result = this.#results.shift();
     if (result != null) {
       return result;

@@ -1,4 +1,4 @@
-export type { Agent, AgentType } from './agents/agents.js';
+export type { Agent, AgentType, InvokeOptions } from './agents/agents.js';
 export type { BugzillaAgenticTask } from './prompt-generators/bugzilla.js';
 export type { PerFileAgenticTask } from './prompt-generators/per-file.js';
 export type {
@@ -9,6 +9,7 @@ export type {
   ErrorInvocationResult,
   GlitchedInvocationResult,
   InvokeResult,
+  OutputSchema,
   SuccessfulInvocationResult,
 } from './types.js';
 

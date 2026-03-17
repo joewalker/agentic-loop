@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { promisify } from 'node:util';
 
 import type { InvokeResult } from '../types.js';
-import type { Agent } from './agents.js';
+import type { Agent, InvokeOptions } from './agents.js';
 
 // istanbul ignore file
 
@@ -24,10 +24,12 @@ export class CodexCLIAgent implements Agent {
   /**
    * Invoke the Codex CLI for a single file and return the final agent output.
    */
-  async invoke(prompt: string, systemPrompt?: string): Promise<InvokeResult> {
+  async invoke(prompt: string, options?: InvokeOptions): Promise<InvokeResult> {
     const outputPath = createOutputPath();
     const fullPrompt =
-      systemPrompt !== undefined ? `${systemPrompt}\n\n${prompt}` : prompt;
+      options?.systemPrompt !== undefined
+        ? `${options.systemPrompt}\n\n${prompt}`
+        : prompt;
     const args = buildCommandArgs(outputPath, fullPrompt);
 
     try {
