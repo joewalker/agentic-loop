@@ -229,6 +229,35 @@ describe('main', () => {
     expect(result).toBe('Done');
   });
 
+  it('should pass structuredOutput through to the reporter', async () => {
+    const agent = new TestAgent();
+    agent.setNextInvokeResult({
+      status: 'success',
+      output: 'text',
+      structuredOutput: { found: true },
+    });
+
+    const promptGenerator = new FixedPromptGenerator([
+      { id: 'a.ts', prompt: 'Analyze a' },
+    ]);
+
+    const appendSpy = vi.fn().mockResolvedValue(undefined);
+    const reporter = { append: appendSpy };
+
+    const result = await runMainWithFakeTimers({
+      name: 'structured-output',
+      agent,
+      promptGenerator,
+      reporter,
+      maxTurns: 1,
+    });
+    expect(result).toContain('Done');
+    expect(appendSpy).toHaveBeenCalledOnce();
+    const [, invokeResult] = appendSpy.mock.calls[0];
+    expect(invokeResult.status).toBe('success');
+    expect(invokeResult.structuredOutput).toEqual({ found: true });
+  });
+
   it('should keep the prompt outstanding if writing the report fails', async () => {
     const agent = new TestAgent();
     agent.setNextInvokeResult({ status: 'success', output: 'review of a' });

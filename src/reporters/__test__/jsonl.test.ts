@@ -111,6 +111,47 @@ describe('JsonlReporter', () => {
     expect(entry.reason).toBe('rate limit');
   });
 
+  it('should include structuredOutput when present on success', async () => {
+    const report = await JsonlReporter.create(
+      join(tempDir, 'structured-report'),
+    );
+    await report.append(
+      { id: 'structured.ts', prompt: 'Analyze' },
+      {
+        status: 'success',
+        output: 'text output',
+        structuredOutput: { found: true, files: { 'a.ts': 'bug' } },
+      },
+    );
+
+    const entry = JSON.parse(
+      (
+        await readFile(join(tempDir, 'structured-report.jsonl'), 'utf-8')
+      ).trim(),
+    );
+    expect(entry.structuredOutput).toEqual({
+      found: true,
+      files: { 'a.ts': 'bug' },
+    });
+  });
+
+  it('should omit structuredOutput when not present on success', async () => {
+    const report = await JsonlReporter.create(
+      join(tempDir, 'no-structured-report'),
+    );
+    await report.append(
+      { id: 'plain.ts', prompt: 'Review' },
+      { status: 'success', output: 'all good' },
+    );
+
+    const entry = JSON.parse(
+      (
+        await readFile(join(tempDir, 'no-structured-report.jsonl'), 'utf-8')
+      ).trim(),
+    );
+    expect(entry.structuredOutput).toBeUndefined();
+  });
+
   it('should preserve multi-line strings in JSON', async () => {
     const report = await JsonlReporter.create(
       join(tempDir, 'multiline-report'),

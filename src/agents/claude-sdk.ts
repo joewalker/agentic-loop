@@ -1,7 +1,7 @@
 import { query } from '@anthropic-ai/claude-agent-sdk';
 
-import type { InvokeResult } from '../types.js';
-import type { Agent } from './agents.js';
+import type { InvokeResult, SuccessfulInvocationResult } from '../types.js';
+import type { Agent, InvokeOptions } from './agents.js';
 
 // istanbul ignore file
 
@@ -17,9 +17,10 @@ const permissionMode = 'acceptEdits'; // 'bypassPermissions'
 export class ClaudeSDKAgent implements Agent {
   static readonly agentName = 'claude-sdk';
 
-  async invoke(prompt: string, systemPrompt?: string): Promise<InvokeResult> {
+  async invoke(prompt: string, options?: InvokeOptions): Promise<InvokeResult> {
     try {
       const textParts: Array<string> = [];
+      let structuredOutput: unknown;
 
       const messages = query({
         prompt,
@@ -27,7 +28,17 @@ export class ClaudeSDKAgent implements Agent {
           allowedTools: DEFAULT_TOOLS,
           permissionMode,
           maxTurns: DEFAULT_MAX_TURNS,
-          ...(systemPrompt !== undefined ? { systemPrompt } : {}),
+          ...(options?.systemPrompt !== undefined
+            ? { systemPrompt: options.systemPrompt }
+            : {}),
+          ...(options?.outputSchema !== undefined
+            ? {
+                outputFormat: {
+                  type: 'json_schema' as const,
+                  schema: options.outputSchema,
+                },
+              }
+            : {}),
         },
       });
 
@@ -47,7 +58,11 @@ export class ClaudeSDKAgent implements Agent {
 
         if (message.type === 'result') {
           if (message.subtype === 'success') {
-            return { status: 'success', output: textParts.join('\n') };
+            const resultMsg = message as Record<string, unknown>;
+            if (resultMsg['structured_output'] !== undefined) {
+              structuredOutput = resultMsg['structured_output'];
+            }
+            return ClaudeSDKAgent.#successResult(textParts, structuredOutput);
           }
 
           const reason =
@@ -59,13 +74,24 @@ export class ClaudeSDKAgent implements Agent {
 
       // If we get here without a result message, treat the collected text as the output
       return textParts.length > 0
-        ? { status: 'success', output: textParts.join('\n') }
+        ? ClaudeSDKAgent.#successResult(textParts, structuredOutput)
         : { status: 'error', reason: 'No output received from agent' };
     } catch (err) {
       const reason = err instanceof Error ? err.message : String(err);
       const status = this.#isTokenLimitError(reason) ? 'glitch' : 'error';
       return { status, reason };
     }
+  }
+
+  static #successResult(
+    textParts: ReadonlyArray<string>,
+    structuredOutput: unknown,
+  ): SuccessfulInvocationResult {
+    return {
+      status: 'success',
+      output: textParts.join('\n'),
+      ...(structuredOutput !== undefined ? { structuredOutput } : {}),
+    };
   }
 
   #isTokenLimitError(text: string): boolean {

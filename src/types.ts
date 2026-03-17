@@ -6,11 +6,22 @@ import type {
 import type { Reporter, ReporterType } from './reporters/report.js';
 
 /**
+ * A JSON Schema object describing the expected shape of structured output.
+ */
+export type OutputSchema = Record<string, unknown>;
+
+/**
  * We ran a prompt through an Agent and it worked out okay
  */
 export interface SuccessfulInvocationResult {
   readonly status: 'success';
   readonly output: string;
+  /**
+   * When an `outputSchema` was provided, the SDK returns the parsed object
+   * that conforms to the schema. Present only when structured output was
+   * requested and the agent supports it.
+   */
+  readonly structuredOutput?: unknown;
 }
 
 /**
@@ -89,4 +100,11 @@ export interface AgenticLoopCliConfig {
    * working directory.
    */
   readonly systemPrompt?: string;
+
+  /**
+   * An optional JSON Schema describing the expected shape of the agent's
+   * output. When provided, the SDK returns structured data conforming to
+   * the schema instead of (or in addition to) free-form text.
+   */
+  readonly outputSchema?: OutputSchema;
 }

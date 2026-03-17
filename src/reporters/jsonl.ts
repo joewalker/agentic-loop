@@ -15,6 +15,7 @@ type JsonlEntry =
       readonly status: 'success';
       readonly prompt: string;
       readonly output: string;
+      readonly structuredOutput?: unknown;
     }
   | {
       readonly id: string;
@@ -58,6 +59,9 @@ export class JsonlReporter implements Reporter {
         status: result.status,
         prompt: prompt.prompt,
         output: result.output,
+        ...(result.structuredOutput !== undefined
+          ? { structuredOutput: result.structuredOutput }
+          : {}),
       };
     } else {
       entry = {

@@ -46,6 +46,13 @@ export class YamlReporter implements Reporter {
       for (const line of formatBlockScalar(result.output).split('\n')) {
         lines.push(line === '' ? '' : `  ${line}`);
       }
+      if (result.structuredOutput !== undefined) {
+        lines.push('structuredOutput: |');
+        const json = JSON.stringify(result.structuredOutput, null, 2);
+        for (const line of formatBlockScalar(json).split('\n')) {
+          lines.push(line === '' ? '' : `  ${line}`);
+        }
+      }
     } else {
       lines.push('reason: |');
       for (const line of formatBlockScalar(result.reason).split('\n')) {
