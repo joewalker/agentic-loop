@@ -8,6 +8,7 @@ npm-debug.log
 yarn.lock
 /.idea/workspace.xml
 tsconfig.tsbuildinfo
+.env
 
 /IGNORE.md
 /WIP.md

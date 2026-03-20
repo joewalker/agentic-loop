@@ -1,0 +1,23 @@
+{
+  "name": "dom-workers-retriage",
+  "agent": "claude-sdk",
+  "promptGenerator": [
+    "bugzilla",
+    {
+      "search": {
+        "product": "Core",
+        "components": ["DOM: Workers"],
+        "bugStatus": ["NEW", "ASSIGNED", "REOPENED", "UNCONFIRMED"],
+        "advanced": [
+          {
+            "field": "creation_ts",
+            "matchType": "lessthan",
+            "value": "2020-01-01"
+          }
+        ]
+      },
+      "promptTemplate": "{{include:./bugzilla-retriage.md}}"
+    }
+  ],
+  "maxTurns": 2
+}
