@@ -34,7 +34,10 @@ describe('loadCliConfig', () => {
     await mkdir(cwdDir, { recursive: true });
     process.chdir(cwdDir);
 
-    await writeFile(join(configDir, 'prompts', 'shared.md'), 'Shared guidance.');
+    await writeFile(
+      join(configDir, 'prompts', 'shared.md'),
+      'Shared guidance.',
+    );
     await writeFile(
       join(configDir, 'config.json'),
       `${JSON.stringify(

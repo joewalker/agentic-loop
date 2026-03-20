@@ -45,7 +45,10 @@ export async function normalizeCliConfig(
           systemPrompt: await expandIncludes(config.systemPrompt, configDir),
         }
       : {}),
-    promptGenerator: normalizePromptGenerator(config.promptGenerator, configDir),
+    promptGenerator: normalizePromptGenerator(
+      config.promptGenerator,
+      configDir,
+    ),
   };
 }
 

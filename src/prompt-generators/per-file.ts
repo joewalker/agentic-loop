@@ -80,7 +80,14 @@ export async function buildPrompt(
   task: PerFileAgenticTask,
   file: string,
 ): Promise<string> {
-  let prompt = task.promptTemplate.replaceAll('{{file}}', file);
+  // Expand includes first so that data placeholders inside included files
+  // are visible to the subsequent replaceAll call.
+  let prompt = await expandIncludes(
+    task.promptTemplate,
+    task.basePath ?? process.cwd(),
+  );
+
+  prompt = prompt.replaceAll('{{file}}', file);
 
   if (task.contextFiles && task.contextFiles.length > 0) {
     prompt += '\n\nAdditional context files:\n';
@@ -89,7 +96,7 @@ export async function buildPrompt(
     }
   }
 
-  return expandIncludes(prompt, task.basePath ?? process.cwd());
+  return prompt;
 }
 
 /**
