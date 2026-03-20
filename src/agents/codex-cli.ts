@@ -21,6 +21,10 @@ const sandboxMode = 'read-only'; //'workspace-write'
 export class CodexCLIAgent implements Agent {
   static readonly agentName = 'codex-cli';
 
+  static async create(): Promise<Agent> {
+    return new CodexCLIAgent();
+  }
+
   #hasWarned = false;
 
   /**
@@ -79,7 +83,6 @@ export class CodexCLIAgent implements Agent {
     const unsupported: Array<string> = [
       ...(options?.allowedTools != null ? ['allowedTools'] : []),
       ...(options?.disallowedTools != null ? ['disallowedTools'] : []),
-      ...(options?.mcpServers != null ? ['mcpServers'] : []),
       ...(options?.outputSchema != null ? ['outputSchema'] : []),
     ];
     if (unsupported.length > 0) {

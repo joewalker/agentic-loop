@@ -31,53 +31,32 @@ const PAUSE_SECS = 5;
 const MAX_CONSECUTIVE_GLITCHES = 5;
 
 /**
- * Run the agentic loop.
- * Processes files sequentially, saving state and report after each file.
- * Resumes from saved state if a previous run was interrupted.
+ * Convert a configuration spec into a set of concrete implementations all with
+ * defaults applied, then call the actual agenticLoop function.
  */
 export async function agenticLoop(
   config: AgenticLoopCliConfig,
 ): Promise<string> {
-  const {
-    name,
-    outputDir = process.cwd(),
-    agent,
-    promptGenerator,
-    reporter = DEFAULT_REPORTER,
-    maxTurns = Infinity,
-    interPromptPause = PAUSE_SECS,
-    systemPrompt,
-    outputSchema,
-    allowedTools,
-    disallowedTools,
-    mcpServers,
-  } = config;
-
-  const resolvedSystemPrompt =
-    systemPrompt !== undefined
-      ? await expandIncludes(systemPrompt, process.cwd())
-      : undefined;
+  const { outputDir = process.cwd(), reporter = DEFAULT_REPORTER } = config;
 
   return agenticLoopImpl({
-    name,
+    name: config.name,
     outputDir,
-    agent: typeof agent === 'string' ? createAgent(agent) : agent,
-    promptGenerator: Array.isArray(promptGenerator)
-      ? createPromptGenerator(...promptGenerator)
-      : promptGenerator,
+    agent: await createAgent(config.agent),
+    promptGenerator: await createPromptGenerator(config.promptGenerator),
     reporter:
       typeof reporter === 'string'
-        ? await createReporter(outputDir, name, reporter)
+        ? await createReporter(reporter, { outputDir, jobName: config.name })
         : reporter,
-    maxTurns,
-    interPromptPause,
-    ...(resolvedSystemPrompt !== undefined
-      ? { systemPrompt: resolvedSystemPrompt }
-      : {}),
-    ...(outputSchema !== undefined ? { outputSchema } : {}),
-    ...(allowedTools !== undefined ? { allowedTools } : {}),
-    ...(disallowedTools !== undefined ? { disallowedTools } : {}),
-    ...(mcpServers !== undefined ? { mcpServers } : {}),
+    maxTurns: config.maxTurns ?? Infinity,
+    interPromptPause: config.interPromptPause ?? PAUSE_SECS,
+    systemPrompt:
+      config.systemPrompt != null
+        ? await expandIncludes(config.systemPrompt, process.cwd())
+        : undefined,
+    outputSchema: config.outputSchema,
+    allowedTools: config.allowedTools,
+    disallowedTools: config.disallowedTools,
   });
 }
 
@@ -93,15 +72,17 @@ interface AgenticLoopConfig {
   readonly reporter: Reporter;
   readonly maxTurns: number;
   readonly interPromptPause: number;
-  readonly systemPrompt?: string;
-  readonly outputSchema?: OutputSchema;
-  readonly allowedTools?: ReadonlyArray<string>;
-  readonly disallowedTools?: ReadonlyArray<string>;
-  readonly mcpServers?: Record<string, McpServerConfig>;
+  readonly systemPrompt?: string | undefined;
+  readonly outputSchema?: OutputSchema | undefined;
+  readonly allowedTools?: ReadonlyArray<string> | undefined;
+  readonly disallowedTools?: ReadonlyArray<string> | undefined;
+  readonly mcpServers?: Record<string, McpServerConfig> | undefined;
 }
 
 /**
  * The actual implementation for `agenticLoop(…)`
+ * Processes prompts sequentially, saving state and report after each file.
+ * Resumes from saved state if a previous run was interrupted.
  */
 async function agenticLoopImpl(config: AgenticLoopConfig): Promise<string> {
   const {

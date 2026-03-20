@@ -7,6 +7,11 @@ import type { Agent, InvokeOptions } from './agents.js';
  */
 export class TestAgent implements Agent {
   static readonly agentName = 'test';
+
+  static async create(): Promise<Agent> {
+    return new TestAgent();
+  }
+
   #results: Array<InvokeResult> = [];
 
   setNextInvokeResult(...results: Array<InvokeResult>): void {

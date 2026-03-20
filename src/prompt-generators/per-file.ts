@@ -45,6 +45,12 @@ export interface PerFileAgenticTask {
  * files in the filesystem
  */
 export class PerFilePromptGenerator implements PromptGenerator {
+  static readonly promptGeneratorName = 'per-file';
+
+  static async create(task: PerFileAgenticTask): Promise<PromptGenerator> {
+    return new PerFilePromptGenerator(task);
+  }
+
   readonly #task: PerFileAgenticTask;
 
   constructor(task: PerFileAgenticTask) {

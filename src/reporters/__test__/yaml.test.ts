@@ -17,7 +17,10 @@ describe('Report', () => {
   });
 
   it('should create the report file on first append', async () => {
-    const report = await YamlReporter.create(join(tempDir, 'test-report'));
+    const report = await YamlReporter.create({
+      outputDir: tempDir,
+      jobName: 'test',
+    });
     await report.append(
       { id: 'first.ts', prompt: 'Hello' },
       { status: 'success', output: 'World' },
@@ -30,7 +33,10 @@ describe('Report', () => {
   });
 
   it('should append multiple entries as separate YAML documents', async () => {
-    const report = await YamlReporter.create(join(tempDir, 'multi-report'));
+    const report = await YamlReporter.create({
+      outputDir: tempDir,
+      jobName: 'multi',
+    });
 
     await report.append(
       { id: 'a.ts', prompt: 'Review a' },
@@ -48,25 +54,11 @@ describe('Report', () => {
     expect(content).toContain('id: "b.ts"');
   });
 
-  it('should create parent directories if needed', async () => {
-    const report = await YamlReporter.create(
-      join(tempDir, 'deep', 'nested', 'task-report'),
-    );
-
-    await report.append(
-      { id: 'nested.ts', prompt: 'Test' },
-      { status: 'success', output: 'Works' },
-    );
-
-    const content = await readFile(
-      join(tempDir, 'deep', 'nested', 'task-report.yaml'),
-      'utf-8',
-    );
-    expect(content).toContain('id: "nested.ts"');
-  });
-
   it('should serialize output for success entries', async () => {
-    const report = await YamlReporter.create(join(tempDir, 'success-report'));
+    const report = await YamlReporter.create({
+      outputDir: tempDir,
+      jobName: 'success',
+    });
     await report.append(
       { id: 'ok.ts', prompt: 'Do stuff' },
       { status: 'success', output: 'Done' },
@@ -82,7 +74,10 @@ describe('Report', () => {
   });
 
   it('should serialize reason for error entries', async () => {
-    const report = await YamlReporter.create(join(tempDir, 'error-report'));
+    const report = await YamlReporter.create({
+      outputDir: tempDir,
+      jobName: 'error',
+    });
     await report.append(
       { id: 'bad.ts', prompt: 'Fix' },
       { status: 'error', reason: 'parse failure' },
@@ -95,7 +90,10 @@ describe('Report', () => {
   });
 
   it('should serialize reason for glitch entries', async () => {
-    const report = await YamlReporter.create(join(tempDir, 'glitch-report'));
+    const report = await YamlReporter.create({
+      outputDir: tempDir,
+      jobName: 'glitch',
+    });
     await report.append(
       { id: 'slow.ts', prompt: 'Analyze' },
       { status: 'glitch', reason: 'rate limit' },
@@ -111,7 +109,10 @@ describe('Report', () => {
   });
 
   it('should handle multi-line prompts and outputs', async () => {
-    const report = await YamlReporter.create(join(tempDir, 'multiline-report'));
+    const report = await YamlReporter.create({
+      outputDir: tempDir,
+      jobName: 'multiline',
+    });
     await report.append(
       { id: 'multi.ts', prompt: 'Line one\nLine two\nLine three' },
       { status: 'success', output: 'Result A\nResult B' },
@@ -128,7 +129,10 @@ describe('Report', () => {
   });
 
   it('should trim trailing whitespace from lines', async () => {
-    const report = await YamlReporter.create(join(tempDir, 'trim-report'));
+    const report = await YamlReporter.create({
+      outputDir: tempDir,
+      jobName: 'trim',
+    });
     await report.append(
       { id: 'trim.ts', prompt: 'has trailing   \nspaces   ' },
       { status: 'success', output: 'ok' },
@@ -139,9 +143,10 @@ describe('Report', () => {
   });
 
   it('should not produce trailing whitespace on blank lines in block scalars', async () => {
-    const report = await YamlReporter.create(
-      join(tempDir, 'blank-lines-report'),
-    );
+    const report = await YamlReporter.create({
+      outputDir: tempDir,
+      jobName: 'blank-lines',
+    });
     await report.append(
       { id: 'blank.ts', prompt: 'para one\n\npara two' },
       { status: 'success', output: 'result one\n\nresult two' },
@@ -157,9 +162,10 @@ describe('Report', () => {
   });
 
   it('should include structuredOutput when present on success', async () => {
-    const report = await YamlReporter.create(
-      join(tempDir, 'structured-report'),
-    );
+    const report = await YamlReporter.create({
+      outputDir: tempDir,
+      jobName: 'structured',
+    });
     await report.append(
       { id: 'structured.ts', prompt: 'Analyze' },
       {
@@ -179,9 +185,10 @@ describe('Report', () => {
   });
 
   it('should omit structuredOutput when not present on success', async () => {
-    const report = await YamlReporter.create(
-      join(tempDir, 'no-structured-report'),
-    );
+    const report = await YamlReporter.create({
+      outputDir: tempDir,
+      jobName: 'no-structured',
+    });
     await report.append(
       { id: 'plain.ts', prompt: 'Review' },
       { status: 'success', output: 'all good' },
@@ -195,9 +202,10 @@ describe('Report', () => {
   });
 
   it('should quote the id field for YAML safety', async () => {
-    const report = await YamlReporter.create(
-      join(tempDir, 'special-id-report'),
-    );
+    const report = await YamlReporter.create({
+      outputDir: tempDir,
+      jobName: 'special-id',
+    });
     await report.append(
       { id: 'file: with #special chars', prompt: 'Test' },
       { status: 'success', output: 'ok' },

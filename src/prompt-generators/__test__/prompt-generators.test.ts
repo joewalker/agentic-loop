@@ -18,8 +18,8 @@ describe('promptGeneratorTypes', () => {
 });
 
 describe('createPromptGenerator', () => {
-  it('should return a PromptGenerator with generate()', () => {
-    const generator = createPromptGenerator('per-file', task);
+  it('should return a PromptGenerator with generate()', async () => {
+    const generator = await createPromptGenerator(['per-file', task]);
     expect(typeof generator.generate).toBe('function');
   });
 });

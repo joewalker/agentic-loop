@@ -4,9 +4,8 @@ import { PerFilePromptGenerator } from './per-file.js';
 
 /**
  * A prompt is basically just a string that we pass to an agent to kick off
- * some work. In addition to the prompt string, we also track an id for
- * debugging purposes and a function to inform the PromptGenerator what
- * happened when we executed the prompt.
+ * some work. In addition to the prompt string, we also store an id for
+ * tracking / debugging purposes.
  */
 export interface Prompt {
   /**
@@ -15,7 +14,7 @@ export interface Prompt {
    * into an array, etc.
    * Typically we won't be able to use the prompt as an identifier due to its
    * length and the likelihood that the unique part will be embedded deep in
-   * the prompt
+   * the prompt.
    */
   readonly id: string;
 
@@ -26,61 +25,81 @@ export interface Prompt {
 }
 
 /**
- * A PromptGenerator is (obviously) a source of Prompts
+ * A PromptGenerator is a source of prompts for the agentic loop.
+ *
+ * The loop calls `generate()` once per run, iterating over the yielded
+ * prompts sequentially. Generators should check `loopState.isOutstanding(id)`
+ * before yielding a prompt so that already-completed or failed items are
+ * skipped on resume.
+ *
+ * To create a custom prompt generator:
+ *
+ * 1. Create a class that implements this interface with an async generator
+ *    `generate()` method.
+ * 2. Add a static `promptGeneratorName` string and a static async
+ *    `create(config)` factory method.
+ * 3. Register it in the `promptGeneratorCreators` map in this file.
+ *
+ * See `PerFilePromptGenerator` and `BugzillaPromptGenerator` for reference
+ * implementations.
  */
 export interface PromptGenerator {
   /**
-   * Return the prompt stream for this generator instance.
+   * Yield prompts for the loop to process. Called once per run.
+   * Use `loopState.isOutstanding(id)` to skip previously processed items.
    */
   generate(loopState: LoopState): AsyncIterable<Prompt>;
 }
 
-type PromptGeneratorCtor<T extends PromptGenerator = PromptGenerator> = new (
+/**
+ * Pattern for an async creator function for PromptGenerators so we can
+ * register a library of PromptGeneratorCreators to allow easy command line
+ * configuration.
+ */
+export type PromptGeneratorCreator = (
   ...args: Array<any>
-) => T;
+) => Promise<PromptGenerator>;
 
 /**
  * To add a new built-in PromptGenerator, add it in here
  */
-const creatorFunctions = {
-  ['bugzilla']: BugzillaPromptGenerator,
-  ['per-file']: PerFilePromptGenerator,
-} satisfies Record<string, PromptGeneratorCtor>;
+const promptGeneratorCreators = {
+  [BugzillaPromptGenerator.promptGeneratorName]: BugzillaPromptGenerator.create,
+  [PerFilePromptGenerator.promptGeneratorName]: PerFilePromptGenerator.create,
+} satisfies Record<string, PromptGeneratorCreator>;
 
-type PromptGeneratorConstructors = typeof creatorFunctions;
-type PromptGeneratorType = keyof PromptGeneratorConstructors;
-
-/**
- * The type when someone specifies a PromptGenerator in a call to agenticLoop
- */
-export type PromptGeneratorSpec = {
-  [T in PromptGeneratorType]: [
-    T,
-    ...ConstructorParameters<PromptGeneratorConstructors[T]>,
-  ];
-}[PromptGeneratorType];
+type PromptGeneratorCreators = typeof promptGeneratorCreators;
+type PromptGeneratorName = keyof PromptGeneratorCreators;
+type PromptGeneratorConfig = {
+  [T in PromptGeneratorName]: [T, ...Parameters<PromptGeneratorCreators[T]>];
+}[PromptGeneratorName];
 
 /**
- * Enable the command line to know what prompt generators are available
+ * To specify a PromptGenerator in a config file, pass either:
+ * - a PromptGenerator instance
+ * - an array where the first element is the PromptGeneratorName (i.e.
+ *   'bugzilla', 'per-file', etc) and subsequent parameters are then passed to
+ *   the creator function for that type of PromptGenerator.
+ * PromptGeneratorSpec defineds these options.
  */
-export const promptGeneratorTypes = Object.keys(creatorFunctions);
+export type PromptGeneratorSpec = PromptGenerator | PromptGeneratorConfig;
+
+/**
+ * Enable unit tests to know what prompt generators are available
+ */
+export const promptGeneratorTypes = Object.keys(promptGeneratorCreators);
 
 /**
  * Allow easy switching between different PromptGenerator types
  */
-export function createPromptGenerator(
-  ...spec: PromptGeneratorSpec
-): PromptGenerator;
-export function createPromptGenerator<T extends PromptGeneratorType>(
-  type: T,
-  ...args: ConstructorParameters<PromptGeneratorConstructors[T]>
-): PromptGenerator;
-export function createPromptGenerator(
-  type: PromptGeneratorType,
-  ...args: Array<unknown>
-): PromptGenerator {
-  const PromptGeneratorClass = creatorFunctions[type] as new (
-    ...ctorArgs: Array<unknown>
-  ) => PromptGenerator;
-  return new PromptGeneratorClass(...args);
+export async function createPromptGenerator(
+  promptGeneratorSpec: PromptGeneratorSpec,
+): Promise<PromptGenerator> {
+  if (Array.isArray(promptGeneratorSpec)) {
+    const [type, ...args] = promptGeneratorSpec;
+    const creator = promptGeneratorCreators[type] as PromptGeneratorCreator;
+    return creator(...args);
+  }
+
+  return promptGeneratorSpec;
 }

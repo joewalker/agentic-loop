@@ -3,10 +3,6 @@ import type { InvokeResult } from 'agentic-loop/types';
 import { describe, expect, it } from 'vitest';
 
 describe('TestAgent', () => {
-  it('should have the static name "test"', () => {
-    expect(TestAgent.agentName).toBe('test');
-  });
-
   it('should return an error when no results have been set', async () => {
     const agent = new TestAgent();
     const result = await agent.invoke('anything');

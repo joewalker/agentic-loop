@@ -1,13 +1,6 @@
-import type { McpServerConfig } from '@anthropic-ai/claude-agent-sdk';
-
-import type { Agent, AgentType } from './agents/agents.js';
-import type {
-  PromptGenerator,
-  PromptGeneratorSpec,
-} from './prompt-generators/prompt-generators.js';
-import type { Reporter, ReporterType } from './reporters/reporters.js';
-
-export type { McpServerConfig } from '@anthropic-ai/claude-agent-sdk';
+import type { AgentSpec } from './agents/agents.js';
+import type { PromptGeneratorSpec } from './prompt-generators/prompt-generators.js';
+import type { ReporterSpec } from './reporters/reporters.js';
 
 /**
  * A JSON Schema object describing the expected shape of structured output.
@@ -76,17 +69,17 @@ export interface AgenticLoopCliConfig {
   /**
    * The agent to which we send prompts
    */
-  readonly agent: Agent | AgentType;
+  readonly agent: AgentSpec;
 
   /**
    * The source of prompts to sent to the selected agent
    */
-  readonly promptGenerator: PromptGenerator | PromptGeneratorSpec;
+  readonly promptGenerator: PromptGeneratorSpec;
 
   /**
    * How we report on the responses from the agent to the various prompts
    */
-  readonly reporter?: Reporter | ReporterType;
+  readonly reporter?: ReporterSpec;
 
   /**
    * Maximum number of prompts to process. Unlimited when null/undefined.
@@ -123,10 +116,4 @@ export interface AgenticLoopCliConfig {
    * model's context and cannot be used.
    */
   readonly disallowedTools?: ReadonlyArray<string>;
-
-  /**
-   * MCP (Model Context Protocol) server configurations.
-   * Keys are server names, values are server configurations.
-   */
-  readonly mcpServers?: Record<string, McpServerConfig>;
 }

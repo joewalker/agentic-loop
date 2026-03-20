@@ -1,4 +1,4 @@
-import { query } from '@anthropic-ai/claude-agent-sdk';
+import { query, type McpServerConfig } from '@anthropic-ai/claude-agent-sdk';
 
 import type { InvokeResult, SuccessfulInvocationResult } from '../types.js';
 import type { Agent, InvokeOptions } from './agents.js';
@@ -10,12 +10,30 @@ const DEFAULT_MAX_TURNS = 5;
 
 const permissionMode = 'acceptEdits'; // 'bypassPermissions'
 
+export interface ClaudeSDKAgentConfig {
+  /**
+   * MCP (Model Context Protocol) server configurations.
+   * Keys are server names, values are server configurations.
+   */
+  readonly mcpServers?: Record<string, McpServerConfig>;
+}
+
 /**
  * An implementation of the Agent interface that uses Claude via the official
  * SDK.
  */
 export class ClaudeSDKAgent implements Agent {
   static readonly agentName = 'claude-sdk';
+
+  static async create(config?: ClaudeSDKAgentConfig): Promise<Agent> {
+    return new ClaudeSDKAgent(config);
+  }
+
+  #config: ClaudeSDKAgentConfig;
+
+  constructor(config?: ClaudeSDKAgentConfig) {
+    this.#config = config ?? {};
+  }
 
   async invoke(prompt: string, options?: InvokeOptions): Promise<InvokeResult> {
     try {
@@ -44,8 +62,8 @@ export class ClaudeSDKAgent implements Agent {
           ...(options?.disallowedTools !== undefined
             ? { disallowedTools: [...options.disallowedTools] }
             : {}),
-          ...(options?.mcpServers !== undefined
-            ? { mcpServers: options.mcpServers }
+          ...(this.#config?.mcpServers !== undefined
+            ? { mcpServers: this.#config.mcpServers }
             : {}),
         },
       });
