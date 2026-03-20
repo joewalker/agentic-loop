@@ -57,6 +57,7 @@ export async function agenticLoop(
     outputSchema: config.outputSchema,
     allowedTools: config.allowedTools,
     disallowedTools: config.disallowedTools,
+    allowSourceUpdate: config.allowSourceUpdate ?? false,
   });
 }
 
@@ -77,6 +78,7 @@ interface AgenticLoopConfig {
   readonly allowedTools?: ReadonlyArray<string> | undefined;
   readonly disallowedTools?: ReadonlyArray<string> | undefined;
   readonly mcpServers?: Record<string, McpServerConfig> | undefined;
+  readonly allowSourceUpdate: boolean;
 }
 
 /**
@@ -98,11 +100,12 @@ async function agenticLoopImpl(config: AgenticLoopConfig): Promise<string> {
     allowedTools,
     disallowedTools,
     mcpServers,
+    allowSourceUpdate,
   } = config;
 
-  const git = new Git(process.cwd());
+  const git = allowSourceUpdate ? new Git(process.cwd()) : undefined;
 
-  if (!(await git.isClean())) {
+  if (git && !(await git.isClean())) {
     throw new Error(
       'Working directory is not clean. Commit or stash changes before starting.',
     );
@@ -129,7 +132,9 @@ async function agenticLoopImpl(config: AgenticLoopConfig): Promise<string> {
 
     if (result.status === 'success') {
       const message = `Agentic: ${config.name} / ${prompt.id}\n\n${result.output}`;
-      await git.maybeCommitAll(message);
+      if (git) {
+        await git.maybeCommitAll(message);
+      }
       console.log(message);
       glitchCount = 0;
     } else if (result.status === 'glitch') {
