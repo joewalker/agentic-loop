@@ -36,6 +36,7 @@ export class ClaudeSDKAgent implements Agent {
   }
 
   async invoke(prompt: string, options?: InvokeOptions): Promise<InvokeResult> {
+    const stderrChunks: Array<string> = [];
     try {
       const textParts: Array<string> = [];
       let structuredOutput: unknown;
@@ -48,6 +49,9 @@ export class ClaudeSDKAgent implements Agent {
             : DEFAULT_TOOLS,
           permissionMode,
           maxTurns: DEFAULT_MAX_TURNS,
+          stderr: (data: string) => {
+            stderrChunks.push(data);
+          },
           ...(options?.systemPrompt !== undefined
             ? { systemPrompt: options.systemPrompt }
             : {}),
@@ -91,8 +95,10 @@ export class ClaudeSDKAgent implements Agent {
             return ClaudeSDKAgent.#successResult(textParts, structuredOutput);
           }
 
-          const reason =
-            'error' in message ? String(message.error) : 'Unknown error';
+          const reason = this.#buildErrorReason(
+            'error' in message ? String(message.error) : 'Unknown error',
+            stderrChunks,
+          );
           const status = this.#isTokenLimitError(reason) ? 'glitch' : 'error';
           return { status, reason };
         }
@@ -103,7 +109,10 @@ export class ClaudeSDKAgent implements Agent {
         ? ClaudeSDKAgent.#successResult(textParts, structuredOutput)
         : { status: 'error', reason: 'No output received from agent' };
     } catch (err) {
-      const reason = err instanceof Error ? err.message : String(err);
+      const reason = this.#buildErrorReason(
+        err instanceof Error ? err.message : String(err),
+        stderrChunks,
+      );
       const status = this.#isTokenLimitError(reason) ? 'glitch' : 'error';
       return { status, reason };
     }
@@ -118,6 +127,21 @@ export class ClaudeSDKAgent implements Agent {
       output: textParts.join('\n'),
       ...(structuredOutput !== undefined ? { structuredOutput } : {}),
     };
+  }
+
+  /**
+   * Combines an error message with any captured stderr output to provide
+   * more diagnostic context when the Claude Code process fails.
+   */
+  #buildErrorReason(
+    message: string,
+    stderrChunks: ReadonlyArray<string>,
+  ): string {
+    const stderr = stderrChunks.join('').trim();
+    if (stderr.length === 0) {
+      return message;
+    }
+    return `${message}\nstderr: ${stderr}`;
   }
 
   #isTokenLimitError(text: string): boolean {
