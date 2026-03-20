@@ -1,9 +1,9 @@
 import { appendFile, mkdir } from 'node:fs/promises';
-import { dirname } from 'node:path';
+import { join } from 'node:path';
 
 import type { Prompt } from '../prompt-generators/prompt-generators.js';
 import type { InvokeResult } from '../types.js';
-import type { Reporter } from './reporters.js';
+import type { Reporter, ReporterConfig } from './reporters.js';
 
 /**
  * Manages an append-only YAML document stream report file.
@@ -13,12 +13,11 @@ import type { Reporter } from './reporters.js';
  * parseable by any YAML multi-document loader.
  */
 export class YamlReporter implements Reporter {
-  static readonly reportName = 'yaml-report';
-  static readonly fileExtension = 'yaml';
+  static readonly reporterName = 'yaml-report';
 
-  static async create(basePath: string): Promise<YamlReporter> {
-    const path = `${basePath}.${YamlReporter.fileExtension}`;
-    await mkdir(dirname(path), { recursive: true });
+  static async create(config: ReporterConfig): Promise<YamlReporter> {
+    await mkdir(config.outputDir, { recursive: true });
+    const path = join(config.outputDir, `${config.jobName}-report.yaml`);
     return new YamlReporter(path);
   }
 

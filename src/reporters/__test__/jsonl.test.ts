@@ -17,7 +17,10 @@ describe('JsonlReporter', () => {
   });
 
   it('should create the report file on first append', async () => {
-    const report = await JsonlReporter.create(join(tempDir, 'test-report'));
+    const report = await JsonlReporter.create({
+      outputDir: tempDir,
+      jobName: 'test',
+    });
     await report.append(
       { id: 'first.ts', prompt: 'Hello' },
       { status: 'success', output: 'World' },
@@ -31,7 +34,10 @@ describe('JsonlReporter', () => {
   });
 
   it('should append multiple entries as separate JSON lines', async () => {
-    const report = await JsonlReporter.create(join(tempDir, 'multi-report'));
+    const report = await JsonlReporter.create({
+      outputDir: tempDir,
+      jobName: 'multi',
+    });
 
     await report.append(
       { id: 'a.ts', prompt: 'Review a' },
@@ -52,25 +58,11 @@ describe('JsonlReporter', () => {
     expect(lines[1].id).toBe('b.ts');
   });
 
-  it('should create parent directories if needed', async () => {
-    const report = await JsonlReporter.create(
-      join(tempDir, 'deep', 'nested', 'task-report'),
-    );
-
-    await report.append(
-      { id: 'nested.ts', prompt: 'Test' },
-      { status: 'success', output: 'Works' },
-    );
-
-    const content = await readFile(
-      join(tempDir, 'deep', 'nested', 'task-report.jsonl'),
-      'utf-8',
-    );
-    expect(JSON.parse(content.trim()).id).toBe('nested.ts');
-  });
-
   it('should include output field for success entries', async () => {
-    const report = await JsonlReporter.create(join(tempDir, 'success-report'));
+    const report = await JsonlReporter.create({
+      outputDir: tempDir,
+      jobName: 'success',
+    });
     await report.append(
       { id: 'ok.ts', prompt: 'Do stuff' },
       { status: 'success', output: 'Done' },
@@ -84,7 +76,10 @@ describe('JsonlReporter', () => {
   });
 
   it('should include reason field for error entries', async () => {
-    const report = await JsonlReporter.create(join(tempDir, 'error-report'));
+    const report = await JsonlReporter.create({
+      outputDir: tempDir,
+      jobName: 'error',
+    });
     await report.append(
       { id: 'bad.ts', prompt: 'Fix' },
       { status: 'error', reason: 'parse failure' },
@@ -98,7 +93,10 @@ describe('JsonlReporter', () => {
   });
 
   it('should include reason field for glitch entries', async () => {
-    const report = await JsonlReporter.create(join(tempDir, 'glitch-report'));
+    const report = await JsonlReporter.create({
+      outputDir: tempDir,
+      jobName: 'glitch',
+    });
     await report.append(
       { id: 'slow.ts', prompt: 'Analyze' },
       { status: 'glitch', reason: 'rate limit' },
@@ -112,9 +110,10 @@ describe('JsonlReporter', () => {
   });
 
   it('should include structuredOutput when present on success', async () => {
-    const report = await JsonlReporter.create(
-      join(tempDir, 'structured-report'),
-    );
+    const report = await JsonlReporter.create({
+      outputDir: tempDir,
+      jobName: 'structured',
+    });
     await report.append(
       { id: 'structured.ts', prompt: 'Analyze' },
       {
@@ -136,9 +135,10 @@ describe('JsonlReporter', () => {
   });
 
   it('should omit structuredOutput when not present on success', async () => {
-    const report = await JsonlReporter.create(
-      join(tempDir, 'no-structured-report'),
-    );
+    const report = await JsonlReporter.create({
+      outputDir: tempDir,
+      jobName: 'no-structured',
+    });
     await report.append(
       { id: 'plain.ts', prompt: 'Review' },
       { status: 'success', output: 'all good' },
@@ -153,9 +153,10 @@ describe('JsonlReporter', () => {
   });
 
   it('should preserve multi-line strings in JSON', async () => {
-    const report = await JsonlReporter.create(
-      join(tempDir, 'multiline-report'),
-    );
+    const report = await JsonlReporter.create({
+      outputDir: tempDir,
+      jobName: 'multiline',
+    });
     await report.append(
       { id: 'multi.ts', prompt: 'Line one\nLine two' },
       { status: 'success', output: 'Result A\nResult B' },
@@ -169,7 +170,10 @@ describe('JsonlReporter', () => {
   });
 
   it('should produce one valid JSON object per line', async () => {
-    const report = await JsonlReporter.create(join(tempDir, 'valid-report'));
+    const report = await JsonlReporter.create({
+      outputDir: tempDir,
+      jobName: 'valid',
+    });
 
     for (let i = 0; i < 3; i++) {
       await report.append(

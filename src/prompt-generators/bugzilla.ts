@@ -54,6 +54,12 @@ export interface BugzillaAgenticTask {
  * yields a prompt for each one.
  */
 export class BugzillaPromptGenerator implements PromptGenerator {
+  static readonly promptGeneratorName = 'bugzilla';
+
+  static async create(task: BugzillaAgenticTask): Promise<PromptGenerator> {
+    return new BugzillaPromptGenerator(task);
+  }
+
   readonly #task: BugzillaAgenticTask;
 
   constructor(task: BugzillaAgenticTask) {
