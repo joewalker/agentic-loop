@@ -202,7 +202,7 @@ describe('main', () => {
     expect(result).toContain('reached limit of 1 turns');
   });
 
-  it('should throw if working directory is not clean', async () => {
+  it('should throw if working directory is not clean when allowSourceUpdate is true', async () => {
     await writeFile(join(repoPath, 'dirty.txt'), 'dirty');
 
     const agent = new TestAgent();
@@ -213,8 +213,23 @@ describe('main', () => {
         name: 'throw-if-unclean',
         agent,
         promptGenerator,
+        allowSourceUpdate: true,
       }),
     ).rejects.toThrow('Working directory is not clean');
+  });
+
+  it('should not check git cleanliness when allowSourceUpdate is false', async () => {
+    await writeFile(join(repoPath, 'dirty.txt'), 'dirty');
+
+    const agent = new TestAgent();
+    const promptGenerator = new FixedPromptGenerator([]);
+
+    const result = await runMainWithFakeTimers({
+      name: 'skip-clean-check',
+      agent,
+      promptGenerator,
+    });
+    expect(result).toBe('Done');
   });
 
   it('should return "Done" with an empty prompt generator', async () => {

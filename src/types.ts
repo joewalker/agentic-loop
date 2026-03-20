@@ -117,4 +117,12 @@ export interface AgenticLoopCliConfig {
    * model's context and cannot be used.
    */
   readonly disallowedTools?: ReadonlyArray<string>;
+
+  /**
+   * When true, the loop checks that the working directory is clean before
+   * starting, allows agents to make source changes, and commits after each
+   * successful prompt. When false (the default), git state is ignored and
+   * no commits are made.
+   */
+  readonly allowSourceUpdate?: boolean;
 }
