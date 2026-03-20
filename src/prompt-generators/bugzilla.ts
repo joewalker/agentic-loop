@@ -93,7 +93,14 @@ async function buildBugPrompt(
   const bz = new Bugzilla(task.bugzilla);
   const url = `${bz.origin}/show_bug.cgi?id=${bug.id}`;
 
-  const prompt = task.promptTemplate
+  // Expand includes first so that data placeholders inside included files
+  // are visible to the subsequent replaceAll calls.
+  const expanded = await expandIncludes(
+    task.promptTemplate,
+    task.basePath ?? process.cwd(),
+  );
+
+  return expanded
     .replaceAll('{{id}}', String(bug.id))
     .replaceAll('{{summary}}', bug.summary)
     .replaceAll('{{url}}', url)
@@ -103,6 +110,4 @@ async function buildBugPrompt(
     .replaceAll('{{status}}', bug.status)
     .replaceAll('{{assignee}}', bug.assigned_to)
     .replaceAll('{{whiteboard}}', bug.whiteboard);
-
-  return expandIncludes(prompt, task.basePath ?? process.cwd());
 }
