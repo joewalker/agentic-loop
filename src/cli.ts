@@ -1,4 +1,6 @@
 /* eslint-disable no-console */
+import process from 'node:process';
+
 import { agenticLoop } from './agentic-loop.js';
 import { loadCliConfig } from './util/load-cli-config.js';
 
