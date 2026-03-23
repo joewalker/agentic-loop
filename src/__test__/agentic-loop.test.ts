@@ -103,7 +103,7 @@ describe('main', () => {
       name: 'check-done',
       agent,
       promptGenerator,
-      maxTurns: 2,
+      maxPrompts: 2,
     });
     expect(result).toContain('Done');
   });
@@ -174,12 +174,12 @@ describe('main', () => {
       name: 'reset-glitch-count',
       agent,
       promptGenerator,
-      maxTurns: 5,
+      maxPrompts: 5,
     });
     expect(result).toContain('Done');
   });
 
-  it('should respect maxTurns limit', async () => {
+  it('should respect maxPrompts limit', async () => {
     const agent = new TestAgent();
     agent.setNextInvokeResult(
       { status: 'success', output: 'first' },
@@ -197,7 +197,7 @@ describe('main', () => {
       name: 'respect-max-turns',
       agent,
       promptGenerator,
-      maxTurns: 1,
+      maxPrompts: 1,
     });
     expect(result).toContain('reached limit of 1 turns');
   });
@@ -264,7 +264,7 @@ describe('main', () => {
       agent,
       promptGenerator,
       reporter,
-      maxTurns: 1,
+      maxPrompts: 1,
     });
     expect(result).toContain('Done');
     expect(appendSpy).toHaveBeenCalledOnce();

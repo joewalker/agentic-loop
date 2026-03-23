@@ -52,5 +52,5 @@ agenticLoop({
       promptTemplate,
     },
   ],
-  maxTurns: 50,
+  maxPrompts: 50,
 }).catch(console.error);

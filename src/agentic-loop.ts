@@ -49,7 +49,7 @@ export async function agenticLoop(
       typeof reporter === 'string'
         ? await createReporter(reporter, { outputDir, jobName: config.name })
         : reporter,
-    maxTurns: config.maxTurns ?? Infinity,
+    maxPrompts: config.maxPrompts ?? Infinity,
     interPromptPause: config.interPromptPause ?? PAUSE_SECS,
     systemPrompt:
       config.systemPrompt != null
@@ -73,7 +73,7 @@ interface AgenticLoopConfig {
   readonly agent: Agent;
   readonly promptGenerator: PromptGenerator;
   readonly reporter: Reporter;
-  readonly maxTurns: number;
+  readonly maxPrompts: number;
   readonly interPromptPause: number;
   readonly systemPrompt?: string | undefined;
   readonly outputSchema?: OutputSchema | undefined;
@@ -96,7 +96,7 @@ async function agenticLoopImpl(config: AgenticLoopConfig): Promise<string> {
     agent,
     promptGenerator,
     reporter,
-    maxTurns,
+    maxPrompts,
     interPromptPause,
     systemPrompt,
     outputSchema,
@@ -165,9 +165,9 @@ async function agenticLoopImpl(config: AgenticLoopConfig): Promise<string> {
     }
 
     completed++;
-    if (completed >= maxTurns) {
-      logger.state(`Reached limit of ${maxTurns} turns`);
-      return `Done (reached limit of ${maxTurns} turns)`;
+    if (completed >= maxPrompts) {
+      logger.state(`Reached limit of ${maxPrompts} turns`);
+      return `Done (reached limit of ${maxPrompts} turns)`;
     }
 
     if (interPromptPause !== 0) {

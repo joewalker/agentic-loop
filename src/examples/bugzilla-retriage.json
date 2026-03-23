@@ -19,5 +19,5 @@
       "promptTemplate": "{{include:./bugzilla-retriage.md}}"
     }
   ],
-  "maxTurns": 2
+  "maxPrompts": 2
 }

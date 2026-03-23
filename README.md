@@ -44,7 +44,7 @@ The config file is a JSON object matching the `AgenticLoopCliConfig` type. For e
       "promptTemplate": "Review {{file}} for React best practices."
     }
   ],
-  "maxTurns": 10,
+  "maxPrompts": 10,
   "reporter": "yaml-report"
 }
 ```
@@ -80,7 +80,7 @@ The top-level configuration object (`AgenticLoopCliConfig`, defined in `src/type
 | `promptGenerator` | yes | | Which prompt generator to use (see Prompt Generators below). |
 | `outputDir` | no | cwd | Directory for report and state files. CLI JSON configs default this to the config file directory; programmatic calls default to cwd. |
 | `reporter` | no | `'default'` (YAML) | Which reporter to use (see Reporters below). |
-| `maxTurns` | no | unlimited | Stop after processing this many prompts. |
+| `maxPrompts` | no | unlimited | Stop after processing this many prompts. |
 | `interPromptPause` | no | 5 | Seconds to pause between prompts (helps with rate limits). |
 | `systemPrompt` | no | | System prompt passed to the agent. In CLI JSON configs, `{{include:path}}` macros resolve relative to the config file; programmatic calls resolve relative to cwd. |
 | `outputSchema` | no | | JSON Schema for structured output (agent support varies). |

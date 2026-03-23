@@ -15,5 +15,5 @@ await agenticLoop({
       promptTemplate: '/review {{file}}',
     },
   ],
-  maxTurns: 5,
+  maxPrompts: 5,
 }).catch(console.error);

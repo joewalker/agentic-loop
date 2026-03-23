@@ -85,7 +85,7 @@ export interface AgenticLoopCliConfig {
   /**
    * Maximum number of prompts to process. Unlimited when null/undefined.
    */
-  readonly maxTurns?: number;
+  readonly maxPrompts?: number;
 
   /**
    * Pause between each prompt. Can help with rate limiting.
