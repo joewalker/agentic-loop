@@ -26,3 +26,5 @@ export { BugzillaPromptGenerator } from './prompt-generators/bugzilla.js';
 export { PerFilePromptGenerator } from './prompt-generators/per-file.js';
 export { JsonlReporter } from './reporters/jsonl.js';
 export { YamlReporter } from './reporters/yaml.js';
+export type { Logger, LoggerSpec } from './loggers/loggers.js';
+export { createLogger, VerboseLogger } from './loggers/loggers.js';

@@ -1,3 +1,4 @@
+import type { Logger } from '../loggers/loggers.js';
 import type { InvokeResult, OutputSchema } from '../types.js';
 import { ClaudeSDKAgent } from './claude-sdk.js';
 import { CodexCLIAgent } from './codex-cli.js';
@@ -34,6 +35,12 @@ export interface InvokeOptions {
    * tools cannot be invoked.
    */
   readonly disallowedTools?: ReadonlyArray<string>;
+
+  /**
+   * When provided, the agent emits diagnostic messages (tool use, assistant
+   * text, etc.) through this logger.
+   */
+  readonly logger: Logger;
 }
 
 /**
@@ -53,7 +60,7 @@ export interface InvokeOptions {
  * See `ClaudeSDKAgent` and `CodexCLIAgent` for reference implementations.
  */
 export interface Agent {
-  invoke: (prompt: string, options?: InvokeOptions) => Promise<InvokeResult>;
+  invoke: (prompt: string, options: InvokeOptions) => Promise<InvokeResult>;
 }
 
 /**

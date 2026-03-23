@@ -9,9 +9,12 @@ import { expandIncludes } from './expand-includes.js';
 /**
  * Load a CLI JSON config file and normalize paths that should be interpreted
  * relative to the config file itself.
+ * @param verbose Allow the command line to override the verbosity setting in
+ * the config file
  */
 export async function loadCliConfig(
   configPath: string,
+  verbose = false,
 ): Promise<AgenticLoopCliConfig> {
   const resolvedPath = resolve(configPath);
   const raw = await readFile(resolvedPath, 'utf-8');
@@ -23,7 +26,10 @@ export async function loadCliConfig(
     throw new Error(`Failed to parse config file: ${resolvedPath}`);
   }
 
-  return normalizeCliConfig(config, resolvedPath);
+  return {
+    ...(await normalizeCliConfig(config, resolvedPath)),
+    ...(verbose ? { logger: 'verbose' as const } : {}),
+  };
 }
 
 /**

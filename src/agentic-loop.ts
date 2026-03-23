@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import type { McpServerConfig } from '@anthropic-ai/claude-agent-sdk';
 
 import { createAgent, type Agent } from './agents/agents.js';
+import { createLogger, type Logger } from './loggers/loggers.js';
 import {
   createPromptGenerator,
   type PromptGenerator,
@@ -58,6 +59,7 @@ export async function agenticLoop(
     allowedTools: config.allowedTools,
     disallowedTools: config.disallowedTools,
     allowSourceUpdate: config.allowSourceUpdate ?? false,
+    logger: createLogger(config.logger),
   });
 }
 
@@ -79,6 +81,7 @@ interface AgenticLoopConfig {
   readonly disallowedTools?: ReadonlyArray<string> | undefined;
   readonly mcpServers?: Record<string, McpServerConfig> | undefined;
   readonly allowSourceUpdate: boolean;
+  readonly logger: Logger;
 }
 
 /**
@@ -101,6 +104,7 @@ async function agenticLoopImpl(config: AgenticLoopConfig): Promise<string> {
     disallowedTools,
     mcpServers,
     allowSourceUpdate,
+    logger,
   } = config;
 
   const git = allowSourceUpdate ? new Git(process.cwd()) : undefined;
@@ -113,11 +117,13 @@ async function agenticLoopImpl(config: AgenticLoopConfig): Promise<string> {
 
   const path = join(outputDir, `${name}-loop-state.json`);
   const loopState = await LoopState.create(path);
+  logger.state(`Loaded loop state from ${path}`);
 
   let completed = 0;
   let glitchCount = 0;
   for await (const prompt of promptGenerator.generate(loopState)) {
     console.log(`Processing: ${prompt.id}`);
+    logger.state(`Begin: ${prompt.id}`);
     await loopState.begin(prompt.id);
 
     const result = await agent.invoke(prompt.prompt, {
@@ -126,35 +132,46 @@ async function agenticLoopImpl(config: AgenticLoopConfig): Promise<string> {
       ...(allowedTools !== undefined ? { allowedTools } : {}),
       ...(disallowedTools !== undefined ? { disallowedTools } : {}),
       ...(mcpServers !== undefined ? { mcpServers } : {}),
+      logger,
     });
     await reporter.append(prompt, result);
     await loopState.end(prompt.id, result);
+    logger.state(`End: ${prompt.id} (${result.status})`);
 
     if (result.status === 'success') {
       const message = `Agentic: ${config.name} / ${prompt.id}\n\n${result.output}`;
       if (git) {
+        logger.info(`Committing changes for ${prompt.id}`);
         await git.maybeCommitAll(message);
       }
       console.log(message);
+      logger.success(`${prompt.id}: ${result.output.slice(0, 120)}`);
       glitchCount = 0;
     } else if (result.status === 'glitch') {
       glitchCount++;
       if (glitchCount >= MAX_CONSECUTIVE_GLITCHES) {
+        logger.error(
+          `Aborting after ${MAX_CONSECUTIVE_GLITCHES} consecutive glitches`,
+        );
         return `Aborting after ${MAX_CONSECUTIVE_GLITCHES} consecutive glitches. Last: ${result.reason}`;
       }
       console.log(
         `Glitch ${glitchCount}/${MAX_CONSECUTIVE_GLITCHES} on ${prompt.id}: ${result.reason}`,
       );
+      logger.error(`Glitch on ${prompt.id}: ${result.reason}`);
     } else {
+      logger.error(`Error on ${prompt.id}: ${result.reason}`);
       return `Error on ${prompt.id}: ${result.reason}`;
     }
 
     completed++;
     if (completed >= maxTurns) {
+      logger.state(`Reached limit of ${maxTurns} turns`);
       return `Done (reached limit of ${maxTurns} turns)`;
     }
 
     if (interPromptPause !== 0) {
+      logger.info(`Pausing ${interPromptPause}s before next prompt`);
       console.log(`Pause (${interPromptPause}s) before starting next prompt`);
       await new Promise(resolve => {
         setTimeout(resolve, interPromptPause * 1_000);

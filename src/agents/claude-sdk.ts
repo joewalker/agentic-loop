@@ -35,7 +35,15 @@ export class ClaudeSDKAgent implements Agent {
     this.#config = config ?? {};
   }
 
-  async invoke(prompt: string, options?: InvokeOptions): Promise<InvokeResult> {
+  async invoke(prompt: string, options: InvokeOptions): Promise<InvokeResult> {
+    const {
+      logger,
+      allowedTools,
+      systemPrompt,
+      outputSchema,
+      disallowedTools,
+    } = options;
+
     const stderrChunks: Array<string> = [];
     try {
       const textParts: Array<string> = [];
@@ -44,27 +52,23 @@ export class ClaudeSDKAgent implements Agent {
       const messages = query({
         prompt,
         options: {
-          allowedTools: options?.allowedTools
-            ? [...options.allowedTools]
-            : DEFAULT_TOOLS,
+          allowedTools: allowedTools ? [...allowedTools] : DEFAULT_TOOLS,
           permissionMode,
           maxTurns: DEFAULT_MAX_TURNS,
           stderr: (data: string) => {
             stderrChunks.push(data);
           },
-          ...(options?.systemPrompt !== undefined
-            ? { systemPrompt: options.systemPrompt }
-            : {}),
-          ...(options?.outputSchema !== undefined
+          ...(systemPrompt !== undefined ? { systemPrompt } : {}),
+          ...(outputSchema !== undefined
             ? {
                 outputFormat: {
                   type: 'json_schema' as const,
-                  schema: options.outputSchema,
+                  schema: outputSchema,
                 },
               }
             : {}),
-          ...(options?.disallowedTools !== undefined
-            ? { disallowedTools: [...options.disallowedTools] }
+          ...(disallowedTools !== undefined
+            ? { disallowedTools: [...disallowedTools] }
             : {}),
           ...(this.#config?.mcpServers !== undefined
             ? { mcpServers: this.#config.mcpServers }
@@ -82,12 +86,32 @@ export class ClaudeSDKAgent implements Agent {
           for (const block of content) {
             if (typeof block['text'] === 'string') {
               textParts.push(block['text']);
+              logger.agent(block['text']);
+            }
+            if (block['type'] === 'tool_use') {
+              logger.tool(
+                `${String(block['name'])}(${JSON.stringify(block['input'])})`,
+              );
             }
           }
         }
 
+        if (message.type === 'tool_use_summary') {
+          const msg = message as Record<string, unknown>;
+          const toolName =
+            'tool_name' in msg ? String(msg['tool_name']) : 'unknown';
+          const status = 'status' in msg ? String(msg['status']) : '';
+          logger.tool(`Summary: ${toolName} -> ${status}`);
+        }
+
+        if (message.type === 'system') {
+          const msg = message as { subtype?: string; message?: string };
+          logger.system(`[${msg.subtype ?? 'system'}] ${msg.message ?? ''}`);
+        }
+
         if (message.type === 'result') {
           if (message.subtype === 'success') {
+            logger.success('Agent completed successfully');
             const resultMsg = message as Record<string, unknown>;
             if (resultMsg['structured_output'] !== undefined) {
               structuredOutput = resultMsg['structured_output'];
@@ -99,6 +123,7 @@ export class ClaudeSDKAgent implements Agent {
             'error' in message ? String(message.error) : 'Unknown error',
             stderrChunks,
           );
+          logger.error(`Agent result: ${reason}`);
           const status = this.#isTokenLimitError(reason) ? 'glitch' : 'error';
           return { status, reason };
         }
@@ -113,6 +138,7 @@ export class ClaudeSDKAgent implements Agent {
         err instanceof Error ? err.message : String(err),
         stderrChunks,
       );
+      logger.error(`Agent exception: ${reason}`);
       const status = this.#isTokenLimitError(reason) ? 'glitch' : 'error';
       return { status, reason };
     }

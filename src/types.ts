@@ -1,4 +1,5 @@
 import type { AgentSpec } from './agents/agents.js';
+import type { LoggerSpec } from './loggers/loggers.js';
 import type { PromptGeneratorSpec } from './prompt-generators/prompt-generators.js';
 import type { ReporterSpec } from './reporters/reporters.js';
 
@@ -125,4 +126,11 @@ export interface AgenticLoopCliConfig {
    * no commits are made.
    */
   readonly allowSourceUpdate?: boolean;
+
+  /**
+   * Controls verbose diagnostic logging to stderr. Accepts a concrete
+   * `VerboseLogger` instance, the string `'verbose'` (which creates an
+   * enabled logger), or `undefined` (quiet, the default).
+   */
+  readonly logger?: LoggerSpec;
 }
