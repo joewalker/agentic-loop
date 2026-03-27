@@ -39,6 +39,7 @@ When writing reports, documents, technical explanations, analyses, or any long-f
 - Formatting: 2-space indent, trailing commas, semicolons
 - Use `readonly` and `ReadonlyArray<…>` unless the data is designed to be mutable
 - Prefix unused variables with underscore (_varName)
+- Always use curly brackets for `if` statements, etc, even if it all fits on one line
 - Prefer nullish coalescing (??) and optional chaining (?.)
 - Prefer using the EcmaScript standard `#` to denote private members rather than the TypeScript specific `private` keyword (except for constructors since standard EcmaScript doesn't allow the `#constructor` construct).
 - Top level functions should have at least some basic documentation.
