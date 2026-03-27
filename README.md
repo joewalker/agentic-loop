@@ -73,19 +73,19 @@ See `src/examples/react-review.ts` and `src/examples/bugzilla-retriage.ts` for c
 
 The top-level configuration object (`AgenticLoopCliConfig`, defined in `src/types.ts`) accepts the following fields:
 
-| Field | Required | Default | Description |
-|---|---|---|---|
-| `name` | yes | | Task name, used for report filenames and git commit messages. |
-| `agent` | yes | | Which agent to use (see Agents below). |
-| `promptGenerator` | yes | | Which prompt generator to use (see Prompt Generators below). |
-| `outputDir` | no | cwd | Directory for report and state files. CLI JSON configs default this to the config file directory; programmatic calls default to cwd. |
-| `reporter` | no | `'default'` (YAML) | Which reporter to use (see Reporters below). |
-| `maxPrompts` | no | unlimited | Stop after processing this many prompts. |
-| `interPromptPause` | no | 5 | Seconds to pause between prompts (helps with rate limits). |
-| `systemPrompt` | no | | System prompt passed to the agent. In CLI JSON configs, `{{include:path}}` macros resolve relative to the config file; programmatic calls resolve relative to cwd. |
-| `outputSchema` | no | | JSON Schema for structured output (agent support varies). |
-| `allowedTools` | no | agent default | Tool names auto-allowed without permission prompts. |
-| `disallowedTools` | no | | Tool names to block entirely. |
+Field         | Required | Default | Description
+-------------------|-----|------|----------------
+`name`             | yes |      | Task name, used for report filenames and git commit messages
+`agent`            | yes |      | Which agent to use (see Agents below)
+`promptGenerator`  | yes |      | Which prompt generator to use (see Prompt Generators below)
+`outputDir`        | no  | cwd  | Directory for report and state files. CLI JSON configs default this to the config file directory; programmatic calls default to cwd
+`reporter`         | no  | YAML | Which reporter to use (see Reporters below)
+`maxPrompts`       | no  | ∞    | Stop after processing this many prompts
+`interPromptPause` | no  | 5    | Seconds to pause between prompts (helps with rate limits)
+`systemPrompt`     | no  |      | System prompt passed to the agent. In CLI JSON configs, `{{include:path}}` macros resolve relative to the config file; programmatic calls resolve relative to cwd
+`outputSchema`     | no  |      | JSON Schema for structured output (agent support varies)
+`allowedTools`     | no  | see agent | Tool names auto-allowed without permission prompts
+`disallowedTools`  | no  |      | Tool names to block entirely
 
 ## How the Loop Works
 
@@ -150,13 +150,13 @@ Specify a prompt generator as a tuple: `["generator-name", { ...config }]`.
 
 Generates one prompt per file matching a glob pattern. The `{{file}}` placeholder in the template is replaced with each file path.
 
-| Field | Required | Description |
-|---|---|---|
-| `filePattern` | yes | Glob pattern for files to process (e.g. `"src/**/*.ts"`). |
-| `promptTemplate` | yes | Template string; `{{file}}` is replaced with the file path. |
-| `excludePatterns` | no | Glob patterns to exclude. |
-| `contextFiles` | no | Additional file paths appended to the prompt as context. |
-| `basePath` | no | Base directory for resolving `{{include:...}}` paths. Programmatic callers default to cwd; CLI JSON configs default omitted values to the config file directory. |
+Field        | Required | Description
+------------------|-----|------------
+`filePattern`     | yes | Glob pattern for files to process (e.g. `"src/**/*.ts"`)
+`promptTemplate`  | yes | Template string; `{{file}}` is replaced with the file path
+`excludePatterns` | no  | Glob patterns to exclude
+`contextFiles`    | no  | Additional file paths appended to the prompt as context
+`basePath`.       | no  | Base directory for resolving `{{include:...}}` paths. Programmatic callers default to cwd; CLI JSON configs default omitted values to the config file directory
 
 Prompt templates support `{{include:path}}` macros that inline the contents of a file (resolved relative to `basePath`). Includes are recursive and circular references are detected.
 
@@ -178,29 +178,29 @@ Source: `src/prompt-generators/per-file.ts`
 
 Queries a Bugzilla instance and generates one prompt per matching bug. Bug field placeholders in the template are replaced with values from each bug.
 
-| Field | Required | Description |
-|---|---|---|
-| `search` | yes | Search parameters (see below). |
-| `promptTemplate` | yes | Template with bug placeholders (see below). |
-| `bugzilla` | no | Connection options. Defaults to `bugzilla.mozilla.org` with no API key. |
-| `basePath` | no | Base directory for resolving `{{include:...}}` paths. Programmatic callers default to cwd; CLI JSON configs default omitted values to the config file directory. |
+Field     |   Required | Description
+-----------------|-----|------------
+`search`         | yes | Search parameters (see below)
+`promptTemplate` | yes | Template with bug placeholders (see below)
+`bugzilla`       | no  | Connection options. Defaults to `bugzilla.mozilla.org` with no API key
+`basePath`       | no  | Base directory for resolving `{{include:...}}` paths. Programmatic callers default to cwd; CLI JSON configs default omitted values to the config file directory
 
 Available template placeholders: `{{id}}`, `{{summary}}`, `{{url}}`, `{{component}}`, `{{product}}`, `{{severity}}`, `{{status}}`, `{{assignee}}`, `{{whiteboard}}`.
 
 Search parameters (`search` field):
 
-| Field | Description |
-|---|---|
-| `product` | Restrict to a single product. |
-| `components` | Array of component names (OR match). |
-| `bugStatus` | Array of statuses: `UNCONFIRMED`, `NEW`, `ASSIGNED`, `REOPENED`, `RESOLVED`, `VERIFIED`, `CLOSED`. |
-| `keywords` | Array of keywords (OR match). |
-| `assignedTo` | Filter by assignee. |
-| `bugSeverity` | Array of severity values (e.g. `S1`, `S2`). |
-| `advanced` | Array of `{ field, matchType, value }` for advanced field-based queries. |
-| `change` | Detect changes: `{ field, from, to, value }`. |
-| `dryRun` | When true, skip the actual query and return an empty set. |
-| `logQuery` | When true, log the query URL to stdout. |
+Field         | Description
+--------------|------------
+`product`     | Restrict to a single product
+`components`  | Array of component names (OR match)
+`bugStatus`   | Array of statuses: `UNCONFIRMED`, `NEW`, `ASSIGNED`, `REOPENED`, `RESOLVED`, `VERIFIED`, `CLOSED`
+`keywords`.   | Array of keywords (OR match)
+`assignedTo`  | Filter by assignee
+`bugSeverity` | Array of severity values (e.g. `S1`, `S2`)
+`advanced`    | Array of `{ field, matchType, value }` for advanced field-based queries
+`change`      | Detect changes: `{ field, from, to, value }`
+`dryRun`      | When true, skip the actual query and return an empty set
+`logQuery`    | When true, log the query URL to stdout
 
 Config example:
 
