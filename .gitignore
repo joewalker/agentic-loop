@@ -6,16 +6,16 @@
 *.idlk
 npm-debug.log
 yarn.lock
-/.idea/workspace.xml
 tsconfig.tsbuildinfo
 .env
+/.idea/workspace.xml
+/.claude/worktrees
+/.claude/settings.local.json
 
 /IGNORE.md
 /WIP.md
-/.claude/worktrees
-/src/examples/experiments
-
 /ignore/
+/src/examples/experiments
 
 node_modules
 **/dist/**
