@@ -166,8 +166,8 @@ async function agenticLoopImpl(config: AgenticLoopConfig): Promise<string> {
 
     completed++;
     if (completed >= maxPrompts) {
-      logger.state(`Reached limit of ${maxPrompts} turns`);
-      return `Done (reached limit of ${maxPrompts} turns)`;
+      logger.state(`Reached limit of ${maxPrompts} prompts`);
+      return `Done (reached limit of ${maxPrompts} prompts)`;
     }
 
     if (interPromptPause !== 0) {
