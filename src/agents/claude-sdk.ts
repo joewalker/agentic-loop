@@ -55,10 +55,12 @@ export class ClaudeSDKAgent implements Agent {
       const textParts: Array<string> = [];
       let structuredOutput: unknown;
 
+      const toolSet = allowedTools ? [...allowedTools] : DEFAULT_TOOLS;
       const messages = query({
         prompt,
         options: {
-          allowedTools: allowedTools ? [...allowedTools] : DEFAULT_TOOLS,
+          tools: toolSet,
+          allowedTools: toolSet,
           permissionMode,
           maxTurns: this.#config.maxTurns ?? DEFAULT_MAX_TURNS,
           stderr: (data: string) => {
