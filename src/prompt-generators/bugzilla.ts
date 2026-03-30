@@ -9,10 +9,10 @@ import { Bugzilla } from './bugzilla/bugzilla.js';
 import type { Prompt, PromptGenerator } from './prompt-generators.js';
 
 /**
- * Configuration for a Bugzilla-driven agentic loop task. Describes which bugs
+ * Configuration for a Bugzilla-driven loop task. Describes which bugs
  * to search for and what prompt to generate for each one.
  */
-export interface BugzillaAgenticTask {
+export interface BugzillaTask {
   /**
    * Connection options for the Bugzilla instance (origin, apiKey).
    * Defaults to bugzilla.mozilla.org with no API key.
@@ -56,13 +56,13 @@ export interface BugzillaAgenticTask {
 export class BugzillaPromptGenerator implements PromptGenerator {
   static readonly promptGeneratorName = 'bugzilla';
 
-  static async create(task: BugzillaAgenticTask): Promise<PromptGenerator> {
+  static async create(task: BugzillaTask): Promise<PromptGenerator> {
     return new BugzillaPromptGenerator(task);
   }
 
-  readonly #task: BugzillaAgenticTask;
+  readonly #task: BugzillaTask;
 
-  constructor(task: BugzillaAgenticTask) {
+  constructor(task: BugzillaTask) {
     this.#task = task;
   }
 
@@ -86,10 +86,7 @@ export class BugzillaPromptGenerator implements PromptGenerator {
  * Build the full prompt for a single bug by substituting placeholders in the
  * template with values from the bug.
  */
-async function buildBugPrompt(
-  task: BugzillaAgenticTask,
-  bug: Bug,
-): Promise<string> {
+async function buildBugPrompt(task: BugzillaTask, bug: Bug): Promise<string> {
   const bz = new Bugzilla(task.bugzilla);
   const url = `${bz.origin}/show_bug.cgi?id=${bug.id}`;
 

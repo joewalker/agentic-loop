@@ -15,7 +15,7 @@ interface PersistedLoopState {
 }
 
 /**
- * Persisted state for a running or interrupted agentic loop. Saved before and
+ * Persisted state for a running or interrupted loop. Saved before and
  * after every prompt execution so that any interruption loses at most one
  * item's work.
  */

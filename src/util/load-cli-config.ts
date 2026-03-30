@@ -1,9 +1,9 @@
 import { readFile } from 'node:fs/promises';
 import { dirname, isAbsolute, resolve } from 'node:path';
 
-import type { BugzillaAgenticTask } from '../prompt-generators/bugzilla.js';
-import type { PerFileAgenticTask } from '../prompt-generators/per-file.js';
-import type { AgenticLoopCliConfig } from '../types.js';
+import type { BugzillaTask } from '../prompt-generators/bugzilla.js';
+import type { PerFileTask } from '../prompt-generators/per-file.js';
+import type { LoopCliConfig } from '../types.js';
 import { expandIncludes } from './expand-includes.js';
 
 /**
@@ -48,7 +48,7 @@ export function parseArgs(args: ReadonlyArray<string>): ParsedArgs {
   const configPath = positional[0];
   if (!configPath) {
     throw new Error(
-      'Usage: agentic-loop [--verbose] [--maxPrompts=N] <config.json>',
+      'Usage: loop-the-loop [--verbose] [--maxPrompts=N] <config.json>',
     );
   }
 
@@ -65,14 +65,14 @@ export function parseArgs(args: ReadonlyArray<string>): ParsedArgs {
  */
 export async function loadCliConfig(
   parsedArgs: ParsedArgs,
-): Promise<AgenticLoopCliConfig> {
+): Promise<LoopCliConfig> {
   const { configPath, maxPrompts, verbose } = parsedArgs;
   const resolvedPath = resolve(configPath);
   const raw = await readFile(resolvedPath, 'utf-8');
 
-  let config: AgenticLoopCliConfig;
+  let config: LoopCliConfig;
   try {
-    config = JSON.parse(raw) as AgenticLoopCliConfig;
+    config = JSON.parse(raw) as LoopCliConfig;
   } catch {
     throw new Error(`Failed to parse config file: ${resolvedPath}`);
   }
@@ -89,9 +89,9 @@ export async function loadCliConfig(
  * and system prompts are resolved relative to the config file directory.
  */
 export async function normalizeCliConfig(
-  config: AgenticLoopCliConfig,
+  config: LoopCliConfig,
   configPath: string,
-): Promise<AgenticLoopCliConfig> {
+): Promise<LoopCliConfig> {
   const resolvedPath = resolve(configPath);
   const configDir = dirname(resolvedPath);
 
@@ -111,9 +111,9 @@ export async function normalizeCliConfig(
 }
 
 function normalizePromptGenerator(
-  promptGenerator: AgenticLoopCliConfig['promptGenerator'],
+  promptGenerator: LoopCliConfig['promptGenerator'],
   configDir: string,
-): AgenticLoopCliConfig['promptGenerator'] {
+): LoopCliConfig['promptGenerator'] {
   if (!Array.isArray(promptGenerator)) {
     return promptGenerator;
   }
@@ -154,7 +154,7 @@ function normalizeBasePath(
   return isAbsolute(basePath) ? basePath : resolve(configDir, basePath);
 }
 
-function isPerFileTaskConfig(value: unknown): value is PerFileAgenticTask {
+function isPerFileTaskConfig(value: unknown): value is PerFileTask {
   return (
     typeof value === 'object' &&
     value !== null &&
@@ -166,7 +166,7 @@ function isPerFileTaskConfig(value: unknown): value is PerFileAgenticTask {
   );
 }
 
-function isBugzillaTaskConfig(value: unknown): value is BugzillaAgenticTask {
+function isBugzillaTaskConfig(value: unknown): value is BugzillaTask {
   return (
     typeof value === 'object' &&
     value !== null &&

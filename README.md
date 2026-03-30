@@ -1,5 +1,5 @@
 
-# agentic-loop
+# loop-the-loop
 
 A framework for running generated prompts through coding agents in an automated loop. You define a source of prompts (a prompt generator), an agent to process them, and a reporter to capture the results. The loop handles sequencing, state persistence, git commits, and error recovery.
 
@@ -14,7 +14,7 @@ pnpm test
 
 ## Running the Loop
 
-There are two ways to run an agentic loop: from a JSON config file via the CLI, or programmatically from TypeScript.
+There are two ways to run a loop: from a JSON config file via the CLI, or programmatically from TypeScript.
 
 ### CLI
 
@@ -26,11 +26,11 @@ node dist/cli.js config.json
 Or, if compiled with Deno:
 
 ```sh
-deno compile --allow-read --allow-write --allow-run --allow-env --allow-net --output=dist/agentic-loop src/cli.ts
-./dist/agentic-loop config.json
+deno compile --allow-read --allow-write --allow-run --allow-env --allow-net --output=dist/loop-the-loop src/cli.ts
+./dist/loop-the-loop config.json
 ```
 
-The config file is a JSON object matching the `AgenticLoopCliConfig` type. For example:
+The config file is a JSON object matching the `LoopCliConfig` type. For example:
 
 ```json
 {
@@ -52,9 +52,9 @@ The config file is a JSON object matching the `AgenticLoopCliConfig` type. For e
 ### Programmatic
 
 ```typescript
-import { agenticLoop } from 'agentic-loop';
+import { loop } from 'loop-the-loop';
 
-agenticLoop({
+loop({
   name: 'my-task',
   agent: 'claude-sdk',
   promptGenerator: [
@@ -71,7 +71,7 @@ See `src/examples/react-review.ts` and `src/examples/bugzilla-retriage.ts` for c
 
 ## Configuration
 
-The top-level configuration object (`AgenticLoopCliConfig`, defined in `src/types.ts`) accepts the following fields:
+The top-level configuration object (`LoopCliConfig`, defined in `src/types.ts`) accepts the following fields:
 
 Field         | Required | Default | Description
 -------------------|-----|------|----------------
@@ -129,7 +129,7 @@ Source: `src/agents/claude-sdk.ts`
 Invokes the Codex CLI (`codex exec`) as an external process.
 
 - Sandbox mode: read-only
-- Custom model via `AGENTIC_CODEX_MODEL` environment variable
+- Custom model via `CODEX_MODEL` environment variable
 - Does not support `allowedTools`, `disallowedTools`, or `outputSchema` (warns and ignores)
 
 Config example:
@@ -352,7 +352,7 @@ All extension-relevant types are exported from the package root (`src/index.ts`)
 - `PromptGenerator`, `Prompt` -- the prompt generator contract and its output type
 - `InvokeResult`, `SuccessfulInvocationResult`, `GlitchedInvocationResult`, `ErrorInvocationResult` -- the three-state result type
 - `OutputSchema` -- JSON Schema type for structured output
-- `PerFileAgenticTask`, `BugzillaAgenticTask` -- config types for the built-in generators
+- `PerFileTask`, `BugzillaTask` -- config types for the built-in generators
 - `YamlReporter`, `JsonlReporter` -- the built-in reporter classes
 
 ### Include Macros

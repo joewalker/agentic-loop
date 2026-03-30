@@ -1,4 +1,4 @@
-import { agenticLoop } from 'agentic-loop';
+import { loop } from 'loop-the-loop';
 
 /**
  * Two years ago from today, used to filter for old bugs.
@@ -31,7 +31,7 @@ VERDICT: one of KEEP_OPEN, CLOSE, or NEEDS_INFO
 CONFIDENCE: HIGH, MEDIUM, or LOW
 REASON: A one-paragraph explanation of your reasoning.`;
 
-agenticLoop({
+loop({
   name: 'dom-workers-retriage',
   agent: 'claude-sdk',
   promptGenerator: [

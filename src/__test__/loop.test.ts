@@ -2,13 +2,13 @@ import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { agenticLoop } from 'agentic-loop';
-import type { Prompt, PromptGenerator } from 'agentic-loop';
-import { TestAgent } from 'agentic-loop/agents/test';
-import { YamlReporter } from 'agentic-loop/reporters/yaml';
-import type { AgenticLoopCliConfig } from 'agentic-loop/types';
-import { Git } from 'agentic-loop/util/git';
-import type { LoopState } from 'agentic-loop/util/loop-state';
+import { loop } from 'loop-the-loop';
+import type { Prompt, PromptGenerator } from 'loop-the-loop';
+import { TestAgent } from 'loop-the-loop/agents/test';
+import { YamlReporter } from 'loop-the-loop/reporters/yaml';
+import type { LoopCliConfig } from 'loop-the-loop/types';
+import { Git } from 'loop-the-loop/util/git';
+import type { LoopState } from 'loop-the-loop/util/loop-state';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 /**
@@ -38,10 +38,8 @@ class FixedPromptGenerator implements PromptGenerator {
  * Helper to run main() with fake timers. We advance timers after starting
  * main() so the 5-second pauses resolve instantly.
  */
-async function runMainWithFakeTimers(
-  config: AgenticLoopCliConfig,
-): Promise<string> {
-  const promise = agenticLoop(config);
+async function runMainWithFakeTimers(config: LoopCliConfig): Promise<string> {
+  const promise = loop(config);
 
   // Keep advancing fake timers until main() resolves
   while (true) {

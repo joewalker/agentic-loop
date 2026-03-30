@@ -7,7 +7,7 @@ import { TestAgent } from './test.js';
 /**
  * Options passed to `Agent.invoke()` alongside the prompt.
  *
- * These are forwarded from the top-level `AgenticLoopCliConfig` and allow
+ * These are forwarded from the top-level `LoopCliConfig` and allow
  * per-invocation control over the agent's behaviour without changing the
  * agent instance itself.
  */
@@ -47,7 +47,7 @@ export interface InvokeOptions {
  * The interface every agent must implement.
  *
  * An agent wraps an LLM (or CLI tool) and exposes a single `invoke`
- * method that sends a prompt and returns a result. The agentic loop
+ * method that sends a prompt and returns a result. The main loop
  * calls `invoke` once per prompt yielded by the prompt generator.
  *
  * To create a custom agent:

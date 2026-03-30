@@ -5,10 +5,10 @@ import type { LoopState } from '../util/loop-state.js';
 import type { Prompt, PromptGenerator } from './prompt-generators.js';
 
 /**
- * Configuration for a single agentic loop task. Describes which files to
- * process, what prompt to send for each one, and where to write the report.
+ * Configuration for a single loop task. Describes which files to process,
+ * what prompt to send for each one, and where to write the report.
  */
-export interface PerFileAgenticTask {
+export interface PerFileTask {
   /**
    * Glob pattern for files to process
    */
@@ -47,13 +47,13 @@ export interface PerFileAgenticTask {
 export class PerFilePromptGenerator implements PromptGenerator {
   static readonly promptGeneratorName = 'per-file';
 
-  static async create(task: PerFileAgenticTask): Promise<PromptGenerator> {
+  static async create(task: PerFileTask): Promise<PromptGenerator> {
     return new PerFilePromptGenerator(task);
   }
 
-  readonly #task: PerFileAgenticTask;
+  readonly #task: PerFileTask;
 
-  constructor(task: PerFileAgenticTask) {
+  constructor(task: PerFileTask) {
     this.#task = task;
   }
 
@@ -77,7 +77,7 @@ export class PerFilePromptGenerator implements PromptGenerator {
  * template and appending any context file references.
  */
 export async function buildPrompt(
-  task: PerFileAgenticTask,
+  task: PerFileTask,
   file: string,
 ): Promise<string> {
   // Expand includes first so that data placeholders inside included files

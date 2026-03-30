@@ -3,7 +3,7 @@ import { styleText } from 'node:util';
 /**
  * The interface every logger must implement.
  *
- * A logger receives categorised diagnostic messages from the agentic loop
+ * A logger receives categorised diagnostic messages from the loop
  * and its agents. Each method corresponds to a semantic category of event.
  */
 export interface Logger {

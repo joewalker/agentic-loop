@@ -1,4 +1,4 @@
-import { toResponseFieldName } from 'agentic-loop/prompt-generators/bugzilla/bug-fields';
+import { toResponseFieldName } from 'loop-the-loop/prompt-generators/bugzilla/bug-fields';
 import {
   BugField,
   BugStatus,
@@ -12,7 +12,7 @@ import {
   Priority,
   Product,
   Type,
-} from 'agentic-loop/prompt-generators/bugzilla/bugzilla';
+} from 'loop-the-loop/prompt-generators/bugzilla/bugzilla';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 /**

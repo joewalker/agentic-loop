@@ -2,7 +2,7 @@ import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { YamlReporter } from 'agentic-loop/reporters/yaml';
+import { YamlReporter } from 'loop-the-loop/reporters/yaml';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 describe('Report', () => {

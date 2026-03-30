@@ -14,7 +14,7 @@ import {
   DEFAULT_REPORTER,
   type Reporter,
 } from './reporters/reporters.js';
-import type { AgenticLoopCliConfig, OutputSchema } from './types.js';
+import type { LoopCliConfig, OutputSchema } from './types.js';
 import { expandIncludes } from './util/expand-includes.js';
 import { Git } from './util/git.js';
 import { LoopState } from './util/loop-state.js';
@@ -33,14 +33,12 @@ const MAX_CONSECUTIVE_GLITCHES = 5;
 
 /**
  * Convert a configuration spec into a set of concrete implementations all with
- * defaults applied, then call the actual agenticLoop function.
+ * defaults applied, then call the actual `loop(…)` function.
  */
-export async function agenticLoop(
-  config: AgenticLoopCliConfig,
-): Promise<string> {
+export async function loop(config: LoopCliConfig): Promise<string> {
   const { outputDir = process.cwd(), reporter = DEFAULT_REPORTER } = config;
 
-  return agenticLoopImpl({
+  return loopImpl({
     name: config.name,
     outputDir,
     agent: await createAgent(config.agent),
@@ -64,10 +62,10 @@ export async function agenticLoop(
 }
 
 /**
- * As AgenticLoopCliConfig with the names resolved to concrete implementations
+ * As LoopCliConfig with the names resolved to concrete implementations
  * and defaults applied.
  */
-interface AgenticLoopConfig {
+interface LoopConfig {
   readonly name: string;
   readonly outputDir: string;
   readonly agent: Agent;
@@ -85,11 +83,11 @@ interface AgenticLoopConfig {
 }
 
 /**
- * The actual implementation for `agenticLoop(…)`
+ * The actual implementation for `loop(…)`
  * Processes prompts sequentially, saving state and report after each file.
  * Resumes from saved state if a previous run was interrupted.
  */
-async function agenticLoopImpl(config: AgenticLoopConfig): Promise<string> {
+async function loopImpl(config: LoopConfig): Promise<string> {
   const {
     name,
     outputDir,
@@ -139,7 +137,7 @@ async function agenticLoopImpl(config: AgenticLoopConfig): Promise<string> {
     logger.state(`End: ${prompt.id} (${result.status})`);
 
     if (result.status === 'success') {
-      const message = `Agentic: ${config.name} / ${prompt.id}\n\n${result.output}`;
+      const message = `Loop: ${config.name} / ${prompt.id}\n\n${result.output}`;
       if (git) {
         logger.info(`Committing changes for ${prompt.id}`);
         await git.maybeCommitAll(message);

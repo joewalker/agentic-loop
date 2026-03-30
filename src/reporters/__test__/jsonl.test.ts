@@ -2,7 +2,7 @@ import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { JsonlReporter } from 'agentic-loop/reporters/jsonl';
+import { JsonlReporter } from 'loop-the-loop/reporters/jsonl';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 describe('JsonlReporter', () => {

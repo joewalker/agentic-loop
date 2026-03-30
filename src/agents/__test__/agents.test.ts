@@ -1,7 +1,7 @@
-import { agentTypes, createAgent } from 'agentic-loop/agents/agents';
-import { ClaudeSDKAgent } from 'agentic-loop/agents/claude-sdk';
-import { CodexCLIAgent } from 'agentic-loop/agents/codex-cli';
-import { TestAgent } from 'agentic-loop/agents/test';
+import { agentTypes, createAgent } from 'loop-the-loop/agents/agents';
+import { ClaudeSDKAgent } from 'loop-the-loop/agents/claude-sdk';
+import { CodexCLIAgent } from 'loop-the-loop/agents/codex-cli';
+import { TestAgent } from 'loop-the-loop/agents/test';
 import { describe, expect, it } from 'vitest';
 
 describe('agentTypes', () => {

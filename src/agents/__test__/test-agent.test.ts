@@ -1,5 +1,5 @@
-import { TestAgent } from 'agentic-loop/agents/test';
-import type { InvokeResult } from 'agentic-loop/types';
+import { TestAgent } from 'loop-the-loop/agents/test';
+import type { InvokeResult } from 'loop-the-loop/types';
 import { describe, expect, it } from 'vitest';
 
 describe('TestAgent', () => {

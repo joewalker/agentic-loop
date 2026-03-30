@@ -10,7 +10,7 @@ import type { Agent, InvokeOptions } from './agents.js';
 // istanbul ignore file
 
 const execFile = promisify(execFileCallback);
-const CODEX_MODEL = process.env['AGENTIC_CODEX_MODEL'];
+const CODEX_MODEL = process.env['CODEX_MODEL'];
 
 const sandboxMode = 'read-only'; //'workspace-write'
 
@@ -140,7 +140,7 @@ function buildCommandArgs(outputPath: string, prompt: string): Array<string> {
  */
 function createOutputPath(): string {
   const nonce = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-  return join(tmpdir(), `agentic-loop-${nonce}.txt`);
+  return join(tmpdir(), `loop-the-loop-${nonce}.txt`);
 }
 
 /**

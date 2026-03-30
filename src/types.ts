@@ -53,9 +53,9 @@ export type InvokeResult =
   | ErrorInvocationResult;
 
 /**
- * Type definition for the main start point for the agentic loop
+ * Type definition for the main start point for the loop
  */
-export interface AgenticLoopCliConfig {
+export interface LoopCliConfig {
   /**
    * The task name is used in reports and as part of a filename when managing
    * state.

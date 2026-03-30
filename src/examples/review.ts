@@ -1,10 +1,10 @@
 import { loadEnvFile } from 'node:process';
 
-import { agenticLoop } from 'agentic-loop';
+import { loop } from 'loop-the-loop';
 
 loadEnvFile();
 
-await agenticLoop({
+await loop({
   name: 'review',
   agent: 'codex-cli', // or 'claude-sdk'
   promptGenerator: [

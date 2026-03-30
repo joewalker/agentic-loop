@@ -4,14 +4,14 @@ import { join } from 'node:path';
 
 import {
   buildPrompt,
-  type PerFileAgenticTask,
-} from 'agentic-loop/prompt-generators/per-file';
-import type { AgenticLoopCliConfig } from 'agentic-loop/types';
+  type PerFileTask,
+} from 'loop-the-loop/prompt-generators/per-file';
+import type { LoopCliConfig } from 'loop-the-loop/types';
 import {
   loadCliConfig,
   normalizeCliConfig,
   parseArgs,
-} from 'agentic-loop/util/load-cli-config';
+} from 'loop-the-loop/util/load-cli-config';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 describe('parseArgs', () => {
@@ -231,11 +231,11 @@ describe('loadCliConfig', () => {
   });
 });
 
-function getPerFileTask(config: AgenticLoopCliConfig): PerFileAgenticTask {
+function getPerFileTask(config: LoopCliConfig): PerFileTask {
   if (!Array.isArray(config.promptGenerator)) {
     throw new TypeError('Expected a tuple prompt generator config');
   }
 
   const [, task] = config.promptGenerator;
-  return task as PerFileAgenticTask;
+  return task as PerFileTask;
 }

@@ -1,4 +1,4 @@
-# Agentic Loop Development Guide
+# Loop the Loop Development Guide
 
 ## Getting Started
 

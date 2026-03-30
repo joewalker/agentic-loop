@@ -4,17 +4,17 @@ import { join } from 'node:path';
 
 import {
   buildPrompt,
-  type PerFileAgenticTask,
+  type PerFileTask,
   PerFilePromptGenerator,
   resolveFiles,
-} from 'agentic-loop/prompt-generators/per-file';
-import type { Prompt } from 'agentic-loop/prompt-generators/prompt-generators';
-import { LoopState } from 'agentic-loop/util/loop-state';
+} from 'loop-the-loop/prompt-generators/per-file';
+import type { Prompt } from 'loop-the-loop/prompt-generators/prompt-generators';
+import { LoopState } from 'loop-the-loop/util/loop-state';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 describe('buildPrompt', () => {
   it('should substitute {{file}} in the template', async () => {
-    const task: PerFileAgenticTask = {
+    const task: PerFileTask = {
       filePattern: '**/*.ts',
       promptTemplate: 'Review the file {{file}} for issues.',
     };
@@ -23,7 +23,7 @@ describe('buildPrompt', () => {
   });
 
   it('should substitute multiple occurrences of {{file}}', async () => {
-    const task: PerFileAgenticTask = {
+    const task: PerFileTask = {
       filePattern: '**/*.ts',
       promptTemplate: 'Check {{file}}. The file {{file}} needs review.',
     };
@@ -32,7 +32,7 @@ describe('buildPrompt', () => {
   });
 
   it('should append context files when present', async () => {
-    const task: PerFileAgenticTask = {
+    const task: PerFileTask = {
       filePattern: '**/*.ts',
       promptTemplate: 'Review {{file}}.',
       contextFiles: ['GUIDELINES.md', 'RULES.md'],
@@ -45,7 +45,7 @@ describe('buildPrompt', () => {
   });
 
   it('should not append context section when contextFiles is empty', async () => {
-    const task: PerFileAgenticTask = {
+    const task: PerFileTask = {
       filePattern: '**/*.ts',
       promptTemplate: 'Review {{file}}.',
       contextFiles: [],
@@ -58,7 +58,7 @@ describe('buildPrompt', () => {
     const tempDir = await mkdtemp(join(tmpdir(), 'per-file-basepath-'));
     try {
       await writeFile(join(tempDir, 'context.md'), 'injected content');
-      const task: PerFileAgenticTask = {
+      const task: PerFileTask = {
         filePattern: '**/*.ts',
         promptTemplate: 'Review {{file}}.\n{{include:context.md}}',
         basePath: tempDir,
@@ -132,8 +132,8 @@ describe('PerFilePromptGenerator', () => {
   });
 
   it('should yield prompts for each matching file', async () => {
-    stateFiles.push(join('cache/agentic-loops', `state.json`));
-    const task: PerFileAgenticTask = {
+    stateFiles.push(join('cache/loop-the-loops', `state.json`));
+    const task: PerFileTask = {
       filePattern: join(tempDir, '*.ts'),
       promptTemplate: 'Review {{file}}',
     };
@@ -152,8 +152,8 @@ describe('PerFilePromptGenerator', () => {
 
   it('should yield no prompts when no files match', async () => {
     const loopState = new LoopState('loop-state-ignore.json');
-    stateFiles.push(join('cache/agentic-loops', `state.json`));
-    const task: PerFileAgenticTask = {
+    stateFiles.push(join('cache/loop-the-loops', `state.json`));
+    const task: PerFileTask = {
       filePattern: join(tempDir, '*.xyz'),
       promptTemplate: 'Review {{file}}',
     };

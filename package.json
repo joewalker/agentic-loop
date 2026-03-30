@@ -1,5 +1,5 @@
 {
-  "name": "agentic-loop",
+  "name": "loop-the-loop",
   "version": "0.0.1",
   "description": "Framework for running generated prompts through coding agents",
   "author": "Joe Walker <jwalker@mozilla.com>",

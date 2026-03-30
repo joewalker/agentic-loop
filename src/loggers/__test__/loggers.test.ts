@@ -1,6 +1,6 @@
 import { styleText } from 'node:util';
 
-import { createLogger, VerboseLogger } from 'agentic-loop/loggers/loggers';
+import { createLogger, VerboseLogger } from 'loop-the-loop/loggers/loggers';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 describe('VerboseLogger', () => {

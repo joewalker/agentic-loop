@@ -25,7 +25,7 @@ export interface Prompt {
 }
 
 /**
- * A PromptGenerator is a source of prompts for the agentic loop.
+ * A PromptGenerator is a source of prompts for the main loop.
  *
  * The loop calls `generate()` once per run, iterating over the yielded
  * prompts sequentially. Generators should check `loopState.isOutstanding(id)`

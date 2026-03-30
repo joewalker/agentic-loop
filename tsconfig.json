@@ -20,7 +20,7 @@
     "noUncheckedSideEffectImports": true,
     "outDir": "./dist",
     "paths": {
-      "agentic-loop/*": ["./src/*"]
+      "loop-the-loop/*": ["./src/*"]
     },
     "resolveJsonModule": true,
     "rootDir": "./src",

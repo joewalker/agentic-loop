@@ -5,7 +5,7 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   resolve: {
     alias: {
-      'agentic-loop': resolve(import.meta.dirname, 'src'),
+      'loop-the-loop': resolve(import.meta.dirname, 'src'),
     },
   },
   test: {

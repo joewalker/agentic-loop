@@ -4,7 +4,7 @@
     "glob": "npm:glob@13.0.6"
   },
   "tasks": {
-    "compile": "deno compile --allow-read --allow-write --allow-run --allow-env --allow-net --output=dist/agentic-loop src/cli.ts",
+    "compile": "deno compile --allow-read --allow-write --allow-run --allow-env --allow-net --output=dist/loop-the-loop src/cli.ts",
     "run": "deno run --allow-read --allow-write --allow-run --allow-env --allow-net src/cli.ts"
   },
   "compilerOptions": {

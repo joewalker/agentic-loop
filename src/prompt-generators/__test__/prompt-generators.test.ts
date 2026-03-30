@@ -1,11 +1,11 @@
-import type { PerFileAgenticTask } from 'agentic-loop/prompt-generators/per-file';
+import type { PerFileTask } from 'loop-the-loop/prompt-generators/per-file';
 import {
   createPromptGenerator,
   promptGeneratorTypes,
-} from 'agentic-loop/prompt-generators/prompt-generators';
+} from 'loop-the-loop/prompt-generators/prompt-generators';
 import { describe, expect, it } from 'vitest';
 
-const task: PerFileAgenticTask = {
+const task: PerFileTask = {
   filePattern: 'src/**/*.tsx',
   excludePatterns: ['**/__test__/**'],
   promptTemplate: 'Review {{file}}',
