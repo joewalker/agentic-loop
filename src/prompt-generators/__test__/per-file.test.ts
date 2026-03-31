@@ -31,29 +31,6 @@ describe('buildPrompt', () => {
     expect(result).toBe('Check bar.ts. The file bar.ts needs review.');
   });
 
-  it('should append context files when present', async () => {
-    const task: PerFileTask = {
-      filePattern: '**/*.ts',
-      promptTemplate: 'Review {{file}}.',
-      contextFiles: ['GUIDELINES.md', 'RULES.md'],
-    };
-    const result = await buildPrompt(task, 'src/app.ts');
-    expect(result).toContain('Review src/app.ts.');
-    expect(result).toContain('Additional context files:');
-    expect(result).toContain('- GUIDELINES.md');
-    expect(result).toContain('- RULES.md');
-  });
-
-  it('should not append context section when contextFiles is empty', async () => {
-    const task: PerFileTask = {
-      filePattern: '**/*.ts',
-      promptTemplate: 'Review {{file}}.',
-      contextFiles: [],
-    };
-    const result = await buildPrompt(task, 'src/app.ts');
-    expect(result).toBe('Review src/app.ts.');
-  });
-
   it('should resolve {{include:...}} macros relative to basePath', async () => {
     const tempDir = await mkdtemp(join(tmpdir(), 'per-file-basepath-'));
     try {

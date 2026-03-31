@@ -155,7 +155,6 @@ Field        | Required | Description
 `filePattern`     | yes | Glob pattern for files to process (e.g. `"src/**/*.ts"`)
 `promptTemplate`  | yes | Template string; `{{file}}` is replaced with the file path
 `excludePatterns` | no  | Glob patterns to exclude
-`contextFiles`    | no  | Additional file paths appended to the prompt as context
 `basePath`.       | no  | Base directory for resolving `{{include:...}}` paths. Programmatic callers default to cwd; CLI JSON configs default omitted values to the config file directory
 
 Prompt templates support `{{include:path}}` macros that inline the contents of a file (resolved relative to `basePath`). Includes are recursive and circular references are detected.

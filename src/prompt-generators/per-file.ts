@@ -26,11 +26,6 @@ export interface PerFileTask {
   promptTemplate: string;
 
   /**
-   * Additional files to add to the prompt context
-   */
-  contextFiles?: Array<string>;
-
-  /**
    * Directory used to resolve `{{include:...}}` paths in `promptTemplate`.
    * Defaults to `process.cwd()` when not specified. Callers that load this
    * task from a config file should pass `path.dirname(configFilePath)` so
@@ -82,21 +77,12 @@ export async function buildPrompt(
 ): Promise<string> {
   // Expand includes first so that data placeholders inside included files
   // are visible to the subsequent replaceAll call.
-  let prompt = await expandIncludes(
+  const prompt = await expandIncludes(
     task.promptTemplate,
     task.basePath ?? process.cwd(),
   );
 
-  prompt = prompt.replaceAll('{{file}}', file);
-
-  if (task.contextFiles && task.contextFiles.length > 0) {
-    prompt += '\n\nAdditional context files:\n';
-    for (const contextFile of task.contextFiles) {
-      prompt += `- ${contextFile}\n`;
-    }
-  }
-
-  return prompt;
+  return prompt.replaceAll('{{file}}', file);
 }
 
 /**
