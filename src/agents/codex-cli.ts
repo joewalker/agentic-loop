@@ -4,8 +4,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { promisify } from 'node:util';
 
-import type { InvokeResult } from '../types.js';
 import type { Agent, InvokeOptions } from '../agents.js';
+import type { InvokeResult } from '../types.js';
 
 // istanbul ignore file
 

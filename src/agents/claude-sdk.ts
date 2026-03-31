@@ -1,7 +1,7 @@
 import { query, type McpServerConfig } from '@anthropic-ai/claude-agent-sdk';
 
-import type { InvokeResult, SuccessfulInvocationResult } from '../types.js';
 import type { Agent, InvokeOptions } from '../agents.js';
+import type { InvokeResult, SuccessfulInvocationResult } from '../types.js';
 
 // istanbul ignore file
 
@@ -132,7 +132,7 @@ export class ClaudeSDKAgent implements Agent {
             const numTurns =
               typeof resultMsg['num_turns'] === 'number'
                 ? resultMsg['num_turns']
-                : this.#config.maxTurns ?? DEFAULT_MAX_TURNS;
+                : (this.#config.maxTurns ?? DEFAULT_MAX_TURNS);
             const reason = `Prompt failed: agent exhausted all ${numTurns} turns without completing. Increase maxTurns in the claude-sdk agent config to allow more work per prompt.`;
             logger.error(reason);
             return { status: 'error', reason };

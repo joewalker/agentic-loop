@@ -2,13 +2,13 @@ import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
+import type { Prompt } from 'loop-the-loop/prompt-generators';
 import {
   buildPrompt,
   type PerFileTask,
   PerFilePromptGenerator,
   resolveFiles,
 } from 'loop-the-loop/prompt-generators/per-file';
-import type { Prompt } from 'loop-the-loop/prompt-generators';
 import { LoopState } from 'loop-the-loop/util/loop-state';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 

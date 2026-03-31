@@ -1,3 +1,4 @@
+import type { Prompt, PromptGenerator } from '../prompt-generators.js';
 import { expandIncludes } from '../util/expand-includes.js';
 import type { LoopState } from '../util/loop-state.js';
 import type {
@@ -6,7 +7,6 @@ import type {
   SearchParams,
 } from './bugzilla/bugzilla-types.js';
 import { Bugzilla } from './bugzilla/bugzilla.js';
-import type { Prompt, PromptGenerator } from '../prompt-generators.js';
 
 /**
  * Configuration for a Bugzilla-driven loop task. Describes which bugs

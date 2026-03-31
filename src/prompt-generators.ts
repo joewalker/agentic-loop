@@ -1,6 +1,6 @@
-import type { LoopState } from './util/loop-state.js';
 import { BugzillaPromptGenerator } from './prompt-generators/bugzilla.js';
 import { PerFilePromptGenerator } from './prompt-generators/per-file.js';
+import type { LoopState } from './util/loop-state.js';
 
 /**
  * A prompt is basically just a string that we pass to an agent to kick off

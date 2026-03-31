@@ -1,8 +1,8 @@
-import type { PerFileTask } from 'loop-the-loop/prompt-generators/per-file';
 import {
   createPromptGenerator,
   promptGeneratorTypes,
 } from 'loop-the-loop/prompt-generators';
+import type { PerFileTask } from 'loop-the-loop/prompt-generators/per-file';
 import { describe, expect, it } from 'vitest';
 
 const task: PerFileTask = {
