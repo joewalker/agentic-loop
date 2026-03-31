@@ -2,7 +2,7 @@ import type { PerFileTask } from 'loop-the-loop/prompt-generators/per-file';
 import {
   createPromptGenerator,
   promptGeneratorTypes,
-} from 'loop-the-loop/prompt-generators/prompt-generators';
+} from 'loop-the-loop/prompt-generators';
 import { describe, expect, it } from 'vitest';
 
 const task: PerFileTask = {

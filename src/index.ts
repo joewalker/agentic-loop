@@ -6,7 +6,7 @@ export type {
   Prompt,
   PromptGenerator,
   PromptGeneratorSpec,
-} from './prompt-generators/prompt-generators.js';
+} from './prompt-generators.js';
 export type {
   Reporter,
   ReporterConfig,

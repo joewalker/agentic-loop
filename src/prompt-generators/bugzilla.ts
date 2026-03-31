@@ -6,7 +6,7 @@ import type {
   SearchParams,
 } from './bugzilla/bugzilla-types.js';
 import { Bugzilla } from './bugzilla/bugzilla.js';
-import type { Prompt, PromptGenerator } from './prompt-generators.js';
+import type { Prompt, PromptGenerator } from '../prompt-generators.js';
 
 /**
  * Configuration for a Bugzilla-driven loop task. Describes which bugs

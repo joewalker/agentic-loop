@@ -2,7 +2,7 @@ import { glob } from 'glob';
 
 import { expandIncludes } from '../util/expand-includes.js';
 import type { LoopState } from '../util/loop-state.js';
-import type { Prompt, PromptGenerator } from './prompt-generators.js';
+import type { Prompt, PromptGenerator } from '../prompt-generators.js';
 
 /**
  * Configuration for a single loop task. Describes which files to process,

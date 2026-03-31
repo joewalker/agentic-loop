@@ -1,7 +1,7 @@
 import { appendFile, mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import type { Prompt } from '../prompt-generators/prompt-generators.js';
+import type { Prompt } from '../prompt-generators.js';
 import type { InvokeResult } from '../types.js';
 import type { Reporter, ReporterConfig } from './reporters.js';
 

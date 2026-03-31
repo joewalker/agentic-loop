@@ -8,7 +8,7 @@ import {
   PerFilePromptGenerator,
   resolveFiles,
 } from 'loop-the-loop/prompt-generators/per-file';
-import type { Prompt } from 'loop-the-loop/prompt-generators/prompt-generators';
+import type { Prompt } from 'loop-the-loop/prompt-generators';
 import { LoopState } from 'loop-the-loop/util/loop-state';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 

@@ -8,7 +8,7 @@ import { createLogger, type Logger } from './loggers/loggers.js';
 import {
   createPromptGenerator,
   type PromptGenerator,
-} from './prompt-generators/prompt-generators.js';
+} from './prompt-generators.js';
 import {
   createReporter,
   DEFAULT_REPORTER,
