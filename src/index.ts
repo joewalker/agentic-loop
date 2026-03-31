@@ -11,7 +11,7 @@ export type {
   Reporter,
   ReporterConfig,
   ReporterSpec,
-} from './reporters/reporters.js';
+} from './reporters.js';
 export type {
   LoopCliConfig,
   ErrorInvocationResult,

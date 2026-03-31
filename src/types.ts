@@ -1,7 +1,7 @@
 import type { AgentSpec } from './agents.js';
 import type { LoggerSpec } from './loggers/loggers.js';
 import type { PromptGeneratorSpec } from './prompt-generators.js';
-import type { ReporterSpec } from './reporters/reporters.js';
+import type { ReporterSpec } from './reporters.js';
 
 /**
  * A JSON Schema object describing the expected shape of structured output.

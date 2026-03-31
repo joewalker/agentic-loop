@@ -13,7 +13,7 @@ import {
   createReporter,
   DEFAULT_REPORTER,
   type Reporter,
-} from './reporters/reporters.js';
+} from './reporters.js';
 import type { LoopCliConfig, OutputSchema } from './types.js';
 import { expandIncludes } from './util/expand-includes.js';
 import { Git } from './util/git.js';
