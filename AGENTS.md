@@ -20,14 +20,6 @@ Other useful commands:
 
 We don't use `npm` (or `npx`). Use `pnpm` or `pnpx` instead.
 
-## Writing Code
-
-- Understand the full requirement before writing anything, ask if needed
-- Plan the simplest working solution. No over-engineering
-- Run the tests before writing code to check we start clean
-- Use Red/Greed TDD where possible
-- Test after writing. Never leave code untested
-
 ## Documentation Style
 
 When writing reports, documents, technical explanations, analyses, or any long-form content:
@@ -37,6 +29,14 @@ When writing reports, documents, technical explanations, analyses, or any long-f
 - Avoid using **bold** and *italics* particularly in headings.
 - Unless otherwise specified, write reports to new files in the `docs/wip/` folder for future reference.
 - Avoid em dashes, smart quotes, non-breaking-spaces/zero-width-spaces/etc
+
+## Writing Code
+
+- Understand the full requirement before writing anything, ask if needed
+- Plan the simplest working solution. No over-engineering
+- Run the tests before writing code to check we start clean
+- Use Red/Greed TDD where possible
+- Test after writing. Never leave code untested
 
 ## Code Style
 
@@ -48,11 +48,12 @@ When writing reports, documents, technical explanations, analyses, or any long-f
 - Formatting: 2-space indent, trailing commas, semicolons
 - Use `readonly` and `ReadonlyArray<…>` unless the data is designed to be mutable
 - Prefix unused variables with underscore (_varName)
-- Always use curly brackets for `if` statements, etc, even if it all fits on one line
+- Always use curly brackets for `if`, `else`, `for`, etc, even when the body fits on one line.
 - Prefer nullish coalescing (??) and optional chaining (?.)
 - Prefer using the EcmaScript standard `#` to denote private members rather than the TypeScript specific `private` keyword (except for constructors since standard EcmaScript doesn't allow the `#constructor` construct).
 - Top level functions should have at least some basic documentation.
-- When using multi-line doc comments (i.e. /** ... */), prefer to use multiple lines rather than squishing everything onto one line.
+- When using multi-line doc comments (i.e. /** ... */), ALWAYS to use multiple lines rather than squishing everything onto one line.
+- Use `// #region ...` markers to divide file sections, never ASCII art lines like `// -----------`.
 - Imports:
   - Sorted via oxfmt (configured in `.oxfmtrc.json`)
   - Importing files from another package in this project - use an absolute path and omit the file extension
@@ -66,4 +67,7 @@ When writing reports, documents, technical explanations, analyses, or any long-f
   - Check tests pass `pnpm tsc && pnpm test`
   - Check with eslint and fix any linting errors `pnpm run eslint`
   - Run oxfmt `pnpm run oxfmt`
-- ALWAYS allow the user to push commits rather than doing it yourself
+- When creating a commit message, take note of the instructions about commit tags in [the README](README.md)
+- Always wait for the user to ask before committing code.
+- When asked to commit code use the default information in `~/.gitconfig` rather than specifying an author.
+- Avoid `Co-Authored-By` trailers to commit messages

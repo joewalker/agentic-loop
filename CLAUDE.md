@@ -1,21 +1,17 @@
 @AGENTS.md
 
-- When asked to commit code, unless otherwise directed, use the information in `~/.gitconfig`.
-
 ## Code Intelligence
 
-Prefer LSP over Grep/Glob/Read for code navigation:
+Always reach for LSP first when navigating code. Grep, Glob, `find`, and Read are fallbacks, not defaults — if a question is about a symbol (function, type, variable, component), the answer comes from LSP.
 
-- `goToDefinition` / `goToImplementation` to jump to source
-- `findReferences` to see all usages across the codebase
-- `workspaceSymbol` to find where something is defined
-- `documentSymbol` to list all symbols in a file
-- `hover` for type info without reading the file
-- `incomingCalls` / `outgoingCalls` for call hierarchy
+- `workspaceSymbol` to find where a symbol is defined — use this instead of grepping for `function foo` or `class Foo`.
+- `goToDefinition` / `goToImplementation` to jump to source — use this instead of grepping for the definition.
+- `findReferences` to see all usages across the codebase — use this instead of grepping for call sites. Required before renaming or changing a function signature.
+- `documentSymbol` to list all symbols in a file — use this instead of reading the file to find a function.
+- `hover` for type info without reading the file.
+- `incomingCalls` / `outgoingCalls` for call hierarchy.
 
-Before renaming or changing a function signature, use `findReferences` to find all call sites first.
-
-Use Grep/Glob only for text/pattern searches (comments, strings, config values) where LSP doesn't help.
+Reach for text search only when LSP genuinely cannot help: comments, string literals, config values, error messages, file-name patterns. In those cases prefer `rg` over `grep` and `rg --files -g <glob>` over `find` — both are faster and respect `.gitignore`.
 
 After writing or editing code, check LSP diagnostics before moving on. Fix any type errors or missing imports immediately.
 
