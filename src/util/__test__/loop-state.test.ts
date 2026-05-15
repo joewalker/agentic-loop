@@ -121,6 +121,15 @@ describe('LoopState', () => {
     expect(data.inProgress).toBe('active-item');
   });
 
+  it('should default completed and failed to empty when missing from saved state', async () => {
+    const path = join(tempDir, 'state.json');
+    await writeFile(path, `${JSON.stringify({}, null, 2)}\n`);
+
+    const loopState = await LoopState.create(path);
+
+    expect(loopState.isOutstanding('anything')).toBe(true);
+  });
+
   it('should load completed ids from saved state', async () => {
     const path = join(tempDir, 'state.json');
     await writeFile(

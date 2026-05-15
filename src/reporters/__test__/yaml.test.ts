@@ -89,6 +89,24 @@ describe('Report', () => {
     expect(content).not.toContain('output:');
   });
 
+  it('should preserve blank lines in multi-paragraph reason text', async () => {
+    const report = await YamlReporter.create({
+      outputDir: tempDir,
+      jobName: 'multi-reason',
+    });
+    await report.append(
+      { id: 'bad.ts', prompt: 'Fix' },
+      { status: 'error', reason: 'first line\n\nsecond line' },
+    );
+
+    const content = await readFile(
+      join(tempDir, 'multi-reason-report.yaml'),
+      'utf-8',
+    );
+    expect(content).not.toMatch(/ +\n/);
+    expect(content).toContain('  first line\n\n  second line');
+  });
+
   it('should serialize reason for glitch entries', async () => {
     const report = await YamlReporter.create({
       outputDir: tempDir,

@@ -16,7 +16,21 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['html', 'json', 'json-summary'],
       reportsDirectory: 'cache/test-coverage',
-      exclude: ['**/node_modules/**', '**/dist/**', '**/.claude/worktrees/**'],
+      exclude: [
+        '**/node_modules/**',
+        '**/dist/**',
+        '**/.claude/worktrees/**',
+        // Thin wrappers around external SDK / CLI processes — exercising them
+        // would require live network or a real `codex` binary.
+        'src/agents/claude-sdk.ts',
+        'src/agents/codex-cli.ts',
+      ],
+      thresholds: {
+        statements: 97,
+        branches: 92,
+        functions: 97,
+        lines: 97,
+      },
     },
   },
 });

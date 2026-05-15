@@ -2,6 +2,7 @@ import {
   createPromptGenerator,
   promptGeneratorTypes,
 } from 'loop-the-loop/prompt-generators';
+import { BatchPromptGenerator } from 'loop-the-loop/prompt-generators/batch';
 import type { PerFileTask } from 'loop-the-loop/prompt-generators/per-file';
 import { describe, expect, it } from 'vitest';
 
@@ -33,5 +34,17 @@ describe('createPromptGenerator', () => {
     };
     const result = await createPromptGenerator(mockGenerator);
     expect(result).toBe(mockGenerator);
+  });
+
+  it('should resolve a batch generator with a nested source spec', async () => {
+    const generator = await createPromptGenerator([
+      'batch',
+      {
+        source: ['per-file', task],
+        summaryPromptTemplate: 'Summarize {{batchSize}}',
+        reportFile: 'report.yaml',
+      },
+    ]);
+    expect(generator).toBeInstanceOf(BatchPromptGenerator);
   });
 });

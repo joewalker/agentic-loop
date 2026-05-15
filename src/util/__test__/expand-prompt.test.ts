@@ -46,6 +46,15 @@ describe('expandIncludes', () => {
     expect(result).toBe('AAA and BBB');
   });
 
+  it('expands the same include macro multiple times by reading it once', async () => {
+    await writeFile(join(tempDir, 'shared.md'), 'SHARED');
+    const result = await expandIncludes(
+      `{{include:shared.md}} / {{include:shared.md}}`,
+      tempDir,
+    );
+    expect(result).toBe('SHARED / SHARED');
+  });
+
   it('resolves relative paths against basePath', async () => {
     await mkdir(join(tempDir, 'sub'));
     await writeFile(join(tempDir, 'sub', 'nested.md'), 'Nested content.');

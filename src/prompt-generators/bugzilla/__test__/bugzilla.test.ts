@@ -116,6 +116,13 @@ describe('Bugzilla', () => {
       const bz = new Bugzilla({ origin: 'https://bz.test' });
       await expect(bz.getBug(1)).rejects.toThrow('Found 2 bugs matching 1');
     });
+
+    it('should throw when the single returned bug is null', async () => {
+      mockFetch({ bugs: [null] });
+
+      const bz = new Bugzilla({ origin: 'https://bz.test' });
+      await expect(bz.getBug(7)).rejects.toThrow('Found 1 bugs matching 7');
+    });
   });
 
   describe('comments', () => {

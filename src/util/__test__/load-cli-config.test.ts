@@ -326,6 +326,116 @@ describe('loadCliConfig', () => {
     );
   });
 
+  it('should throw a clear error for malformed JSON', async () => {
+    const configDir = join(tempDir, 'config');
+    await mkdir(configDir, { recursive: true });
+    const configPath = join(configDir, 'config.json');
+    await writeFile(configPath, '{ not valid json');
+
+    await expect(
+      loadCliConfig({
+        configPath,
+        verbose: false,
+        maxPrompts: undefined,
+      }),
+    ).rejects.toThrow(`Failed to parse config file: ${configPath}`);
+  });
+
+  it('should preserve a pre-constructed promptGenerator instance', async () => {
+    const generator = { generate: async function* () {} };
+    const config = await normalizeCliConfig(
+      {
+        name: 'test',
+        agent: 'test',
+        promptGenerator: generator,
+      },
+      join(tempDir, 'config.json'),
+    );
+
+    expect(config.promptGenerator).toBe(generator);
+  });
+
+  it('should preserve an explicit outputDir', async () => {
+    const configDir = join(tempDir, 'config');
+    const outputDir = join(tempDir, 'custom-output');
+    await mkdir(configDir, { recursive: true });
+
+    const config = await normalizeCliConfig(
+      {
+        name: 'test',
+        agent: 'test',
+        outputDir,
+        promptGenerator: [
+          'per-file',
+          { filePattern: '**/*.ts', promptTemplate: 'Review {{file}}' },
+        ],
+      },
+      join(configDir, 'config.json'),
+    );
+
+    expect(config.outputDir).toBe(outputDir);
+  });
+
+  it('should accept a Bugzilla change date already parsed as a Date', async () => {
+    const configDir = join(tempDir, 'config');
+    const from = new Date(Date.UTC(2025, 0, 15));
+    const to = new Date(Date.UTC(2025, 1, 15));
+
+    const config = await normalizeCliConfig(
+      {
+        name: 'test',
+        agent: 'test',
+        promptGenerator: [
+          'bugzilla',
+          {
+            search: {
+              change: {
+                field: 'bug_status',
+                from,
+                to,
+                value: 'RESOLVED',
+              },
+            },
+            promptTemplate: 'Review {{id}}',
+          },
+        ],
+      },
+      join(configDir, 'config.json'),
+    );
+
+    const change = getBugzillaTask(config).search.change;
+    expect(change?.from).toBe(from);
+    expect(change?.to).toBe(to);
+  });
+
+  it('should reject a non-string non-Date Bugzilla change field', async () => {
+    const configDir = join(tempDir, 'config');
+
+    await expect(
+      normalizeCliConfig(
+        {
+          name: 'test',
+          agent: 'test',
+          promptGenerator: [
+            'bugzilla',
+            {
+              search: {
+                change: {
+                  field: 'bug_status',
+                  from: 12345 as unknown as Date,
+                  to: '2025-02-15' as unknown as Date,
+                  value: 'RESOLVED',
+                },
+              },
+              promptTemplate: 'Review {{id}}',
+            },
+          ],
+        },
+        join(configDir, 'config.json'),
+      ),
+    ).rejects.toThrow('search.change.from must be a yyyy-MM-dd date string');
+  });
+
   it('should resolve system prompt includes relative to the config file', async () => {
     const configDir = join(tempDir, 'config');
     const cwdDir = join(tempDir, 'cwd');
