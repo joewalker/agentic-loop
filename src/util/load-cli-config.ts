@@ -131,18 +131,87 @@ function normalizePromptGenerator(
   }
 
   if (type === 'bugzilla' && isBugzillaTaskConfig(config)) {
-    return [
-      type,
-      {
-        ...config,
-        basePath: normalizeBasePath(config.basePath, configDir),
-      },
-    ];
+    return [type, normalizeBugzillaTaskConfig(config, configDir)];
   }
 
   return promptGenerator;
 }
 
+/**
+ * Normalize Bugzilla task config values loaded from JSON.
+ */
+function normalizeBugzillaTaskConfig(
+  config: BugzillaTask,
+  configDir: string,
+): BugzillaTask {
+  return {
+    ...config,
+    basePath: normalizeBasePath(config.basePath, configDir),
+    search: normalizeBugzillaSearchParams(config.search),
+  };
+}
+
+/**
+ * Normalize Bugzilla search parameters loaded from JSON.
+ */
+function normalizeBugzillaSearchParams(
+  search: BugzillaTask['search'],
+): BugzillaTask['search'] {
+  if (search.change === undefined) {
+    return search;
+  }
+
+  return {
+    ...search,
+    change: {
+      ...search.change,
+      from: parseDateField(search.change.from, 'search.change.from'),
+      to: parseDateField(search.change.to, 'search.change.to'),
+    },
+  };
+}
+
+/**
+ * Parse a JSON date field as a UTC yyyy-MM-dd date.
+ */
+function parseDateField(value: unknown, field: string): Date {
+  if (value instanceof Date) {
+    return value;
+  }
+
+  if (typeof value !== 'string') {
+    throw new Error(`${field} must be a yyyy-MM-dd date string`);
+  }
+
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/u.exec(value);
+  if (match === null) {
+    throw new Error(
+      `${field} must be a valid yyyy-MM-dd date string: ${value}`,
+    );
+  }
+
+  const [, yearText, monthText, dayText] = match;
+  const year = Number(yearText);
+  const month = Number(monthText);
+  const day = Number(dayText);
+  const date = new Date(Date.UTC(year, month - 1, day));
+
+  if (
+    date.getUTCFullYear() !== year ||
+    date.getUTCMonth() !== month - 1 ||
+    date.getUTCDate() !== day
+  ) {
+    throw new Error(
+      `${field} must be a valid yyyy-MM-dd date string: ${value}`,
+    );
+  }
+
+  return date;
+}
+
+/**
+ * Resolve a possibly relative base path against the config file directory.
+ */
 function normalizeBasePath(
   basePath: string | undefined,
   configDir: string,

@@ -2,6 +2,7 @@ import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
+import type { BugzillaTask } from 'loop-the-loop/prompt-generators/bugzilla';
 import type { PerFileTask } from 'loop-the-loop/prompt-generators/per-file';
 import type { LoopCliConfig } from 'loop-the-loop/types';
 import {
@@ -178,6 +179,153 @@ describe('loadCliConfig', () => {
     expect(getPerFileTask(config).basePath).toBe(absoluteBasePath);
   });
 
+  it('should preserve Bugzilla search params when change is omitted', async () => {
+    const configDir = join(tempDir, 'config');
+    const search = { product: 'Core' };
+
+    const config = await normalizeCliConfig(
+      {
+        name: 'test',
+        agent: 'test',
+        promptGenerator: [
+          'bugzilla',
+          {
+            search,
+            promptTemplate: 'Review {{id}}',
+          },
+        ],
+      },
+      join(configDir, 'config.json'),
+    );
+
+    expect(getBugzillaTask(config).search).toBe(search);
+  });
+
+  it('should convert Bugzilla change date strings into Date objects', async () => {
+    const configDir = join(tempDir, 'config');
+    await mkdir(configDir, { recursive: true });
+
+    await writeFile(
+      join(configDir, 'config.json'),
+      `${JSON.stringify(
+        {
+          name: 'test',
+          agent: 'test',
+          promptGenerator: [
+            'bugzilla',
+            {
+              search: {
+                change: {
+                  field: 'bug_status',
+                  from: '2025-01-15',
+                  to: '2025-02-15',
+                  value: 'RESOLVED',
+                },
+              },
+              promptTemplate: 'Review {{id}}',
+            },
+          ],
+        },
+        null,
+        2,
+      )}\n`,
+    );
+
+    const config = await loadCliConfig({
+      configPath: join(configDir, 'config.json'),
+      verbose: false,
+      maxPrompts: undefined,
+    });
+    const change = getBugzillaTask(config).search.change;
+
+    expect(change?.from).toBeInstanceOf(Date);
+    expect(change?.from.toISOString()).toBe('2025-01-15T00:00:00.000Z');
+    expect(change?.to).toBeInstanceOf(Date);
+    expect(change?.to.toISOString()).toBe('2025-02-15T00:00:00.000Z');
+  });
+
+  it('should reject invalid Bugzilla change date strings', async () => {
+    const configDir = join(tempDir, 'config');
+    await mkdir(configDir, { recursive: true });
+
+    await writeFile(
+      join(configDir, 'config.json'),
+      `${JSON.stringify(
+        {
+          name: 'test',
+          agent: 'test',
+          promptGenerator: [
+            'bugzilla',
+            {
+              search: {
+                change: {
+                  field: 'bug_status',
+                  from: 'not-a-date',
+                  to: '2025-02-15',
+                  value: 'RESOLVED',
+                },
+              },
+              promptTemplate: 'Review {{id}}',
+            },
+          ],
+        },
+        null,
+        2,
+      )}\n`,
+    );
+
+    await expect(
+      loadCliConfig({
+        configPath: join(configDir, 'config.json'),
+        verbose: false,
+        maxPrompts: undefined,
+      }),
+    ).rejects.toThrow(
+      'search.change.from must be a valid yyyy-MM-dd date string: not-a-date',
+    );
+  });
+
+  it('should reject invalid Bugzilla change to-date strings', async () => {
+    const configDir = join(tempDir, 'config');
+    await mkdir(configDir, { recursive: true });
+
+    await writeFile(
+      join(configDir, 'config.json'),
+      `${JSON.stringify(
+        {
+          name: 'test',
+          agent: 'test',
+          promptGenerator: [
+            'bugzilla',
+            {
+              search: {
+                change: {
+                  field: 'bug_status',
+                  from: '2025-01-15',
+                  to: '2025-02-31',
+                  value: 'RESOLVED',
+                },
+              },
+              promptTemplate: 'Review {{id}}',
+            },
+          ],
+        },
+        null,
+        2,
+      )}\n`,
+    );
+
+    await expect(
+      loadCliConfig({
+        configPath: join(configDir, 'config.json'),
+        verbose: false,
+        maxPrompts: undefined,
+      }),
+    ).rejects.toThrow(
+      'search.change.to must be a valid yyyy-MM-dd date string: 2025-02-31',
+    );
+  });
+
   it('should resolve system prompt includes relative to the config file', async () => {
     const configDir = join(tempDir, 'config');
     const cwdDir = join(tempDir, 'cwd');
@@ -232,4 +380,13 @@ function getPerFileTask(config: LoopCliConfig): PerFileTask {
 
   const [, task] = config.promptGenerator;
   return task as PerFileTask;
+}
+
+function getBugzillaTask(config: LoopCliConfig): BugzillaTask {
+  if (!Array.isArray(config.promptGenerator)) {
+    throw new TypeError('Expected a tuple prompt generator config');
+  }
+
+  const [, task] = config.promptGenerator;
+  return task as BugzillaTask;
 }
