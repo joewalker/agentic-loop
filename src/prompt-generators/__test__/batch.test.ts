@@ -129,6 +129,23 @@ describe('BatchPromptGenerator', () => {
     expect(prompts.map(p => p.id)).toStrictEqual(['a', 'b']);
   });
 
+  it('skips an inner batch summary that is already completed', async () => {
+    const source = makeSource(['a', 'b', 'c']);
+    const generator = new BatchPromptGenerator(
+      { ...BASE_TASK, batchSize: 2 },
+      source,
+    );
+    const loopState = new LoopState(
+      '',
+      ['batch-summary-after-b', 'batch-summary-after-c'],
+      [],
+    );
+
+    const prompts = await collect(generator, loopState);
+
+    expect(prompts.map(p => p.id)).toStrictEqual(['a', 'b', 'c']);
+  });
+
   it('injects batchSize, batchIds, and reportFile into the summary prompt', async () => {
     const source = makeSource(['bug-1', 'bug-2']);
     const generator = new BatchPromptGenerator(

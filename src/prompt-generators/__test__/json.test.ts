@@ -61,7 +61,7 @@ describe('JsonPromptGenerator', () => {
   const loopState = new LoopState('loop-state-ignore.json');
 
   async function collect(task: JsonTask): Promise<Array<Prompt>> {
-    const generator = new JsonPromptGenerator(task);
+    const generator = await JsonPromptGenerator.create(task);
     const prompts: Array<Prompt> = [];
     for await (const prompt of generator.generate(loopState)) {
       prompts.push(prompt);
@@ -145,7 +145,7 @@ describe('JsonPromptGenerator', () => {
 
   it('should skip elements already tracked in loopState', async () => {
     const stateWithOne = new LoopState('loop-state-ignore.json', ['0'], []);
-    const generator = new JsonPromptGenerator({
+    const generator = await JsonPromptGenerator.create({
       data: ['first', 'second'],
       promptTemplate: '{{value}}',
     });

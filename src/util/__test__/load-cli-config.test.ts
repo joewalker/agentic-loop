@@ -754,6 +754,658 @@ describe('loadCliConfig', () => {
     ).rejects.toThrow('search.change.from must be a yyyy-MM-dd date string');
   });
 
+  it('should reject GitHub task config that is not an object', async () => {
+    const configDir = join(tempDir, 'config');
+
+    await expect(
+      normalizeCliConfig(
+        {
+          name: 'test',
+          agent: 'test',
+          promptGenerator: ['github', 'nope' as unknown as GitHubTask],
+        },
+        join(configDir, 'config.json'),
+      ),
+    ).rejects.toThrow('github task config must be an object');
+  });
+
+  it('should reject GitHub config without a string promptTemplate', async () => {
+    const configDir = join(tempDir, 'config');
+
+    await expect(
+      normalizeCliConfig(
+        {
+          name: 'test',
+          agent: 'test',
+          promptGenerator: [
+            'github',
+            {
+              search: { repository: 'octocat/Hello-World', query: 'is:open' },
+            } as unknown as GitHubTask,
+          ],
+        },
+        join(configDir, 'config.json'),
+      ),
+    ).rejects.toThrow('github.promptTemplate must be a string');
+  });
+
+  it('should reject GitHub config with a non-string basePath', async () => {
+    const configDir = join(tempDir, 'config');
+
+    await expect(
+      normalizeCliConfig(
+        {
+          name: 'test',
+          agent: 'test',
+          promptGenerator: [
+            'github',
+            {
+              search: { repository: 'octocat/Hello-World', query: 'is:open' },
+              promptTemplate: 'Review {{id}}',
+              basePath: 42,
+            } as unknown as GitHubTask,
+          ],
+        },
+        join(configDir, 'config.json'),
+      ),
+    ).rejects.toThrow('github.basePath must be a string');
+  });
+
+  it('should reject GitHub config without an object search', async () => {
+    const configDir = join(tempDir, 'config');
+
+    await expect(
+      normalizeCliConfig(
+        {
+          name: 'test',
+          agent: 'test',
+          promptGenerator: [
+            'github',
+            {
+              promptTemplate: 'Review {{id}}',
+            } as unknown as GitHubTask,
+          ],
+        },
+        join(configDir, 'config.json'),
+      ),
+    ).rejects.toThrow('github.search must be an object');
+  });
+
+  it('should reject GitLab task config that is not an object', async () => {
+    const configDir = join(tempDir, 'config');
+
+    await expect(
+      normalizeCliConfig(
+        {
+          name: 'test',
+          agent: 'test',
+          promptGenerator: ['gitlab', null as unknown as GitLabTask],
+        },
+        join(configDir, 'config.json'),
+      ),
+    ).rejects.toThrow('gitlab task config must be an object');
+  });
+
+  it('should reject GitLab config without a string promptTemplate', async () => {
+    const configDir = join(tempDir, 'config');
+
+    await expect(
+      normalizeCliConfig(
+        {
+          name: 'test',
+          agent: 'test',
+          promptGenerator: [
+            'gitlab',
+            {
+              search: { project: 'gitlab-org/gitlab' },
+            } as unknown as GitLabTask,
+          ],
+        },
+        join(configDir, 'config.json'),
+      ),
+    ).rejects.toThrow('gitlab.promptTemplate must be a string');
+  });
+
+  it('should reject GitLab config with a non-string basePath', async () => {
+    const configDir = join(tempDir, 'config');
+
+    await expect(
+      normalizeCliConfig(
+        {
+          name: 'test',
+          agent: 'test',
+          promptGenerator: [
+            'gitlab',
+            {
+              search: { project: 'gitlab-org/gitlab' },
+              promptTemplate: 'Review {{id}}',
+              basePath: 7,
+            } as unknown as GitLabTask,
+          ],
+        },
+        join(configDir, 'config.json'),
+      ),
+    ).rejects.toThrow('gitlab.basePath must be a string');
+  });
+
+  it('should reject GitLab config without an object search', async () => {
+    const configDir = join(tempDir, 'config');
+
+    await expect(
+      normalizeCliConfig(
+        {
+          name: 'test',
+          agent: 'test',
+          promptGenerator: [
+            'gitlab',
+            {
+              promptTemplate: 'Review {{id}}',
+            } as unknown as GitLabTask,
+          ],
+        },
+        join(configDir, 'config.json'),
+      ),
+    ).rejects.toThrow('gitlab.search must be an object');
+  });
+
+  it('should reject GitLab search with a non-integer perPage', async () => {
+    const configDir = join(tempDir, 'config');
+
+    await expect(
+      normalizeCliConfig(
+        {
+          name: 'test',
+          agent: 'test',
+          promptGenerator: [
+            'gitlab',
+            {
+              search: {
+                project: 'gitlab-org/gitlab',
+                perPage: 2.5,
+              },
+              promptTemplate: 'Review {{id}}',
+            } as unknown as GitLabTask,
+          ],
+        },
+        join(configDir, 'config.json'),
+      ),
+    ).rejects.toThrow('gitlab.search.perPage must be an integer');
+  });
+
+  it('should reject Bugzilla task config that is not an object', async () => {
+    const configDir = join(tempDir, 'config');
+
+    await expect(
+      normalizeCliConfig(
+        {
+          name: 'test',
+          agent: 'test',
+          promptGenerator: ['bugzilla', 'oops' as unknown as BugzillaTask],
+        },
+        join(configDir, 'config.json'),
+      ),
+    ).rejects.toThrow('bugzilla task config must be an object');
+  });
+
+  it('should reject Bugzilla config with a non-string basePath', async () => {
+    const configDir = join(tempDir, 'config');
+
+    await expect(
+      normalizeCliConfig(
+        {
+          name: 'test',
+          agent: 'test',
+          promptGenerator: [
+            'bugzilla',
+            {
+              search: { product: 'Core' },
+              promptTemplate: 'Review {{id}}',
+              basePath: 3,
+            } as unknown as BugzillaTask,
+          ],
+        },
+        join(configDir, 'config.json'),
+      ),
+    ).rejects.toThrow('bugzilla.basePath must be a string');
+  });
+
+  it('should reject Bugzilla search ids containing a non-integer number', async () => {
+    const configDir = join(tempDir, 'config');
+
+    await expect(
+      normalizeCliConfig(
+        {
+          name: 'test',
+          agent: 'test',
+          promptGenerator: [
+            'bugzilla',
+            {
+              search: { ids: [1.5] },
+              promptTemplate: 'Review {{id}}',
+            } as unknown as BugzillaTask,
+          ],
+        },
+        join(configDir, 'config.json'),
+      ),
+    ).rejects.toThrow(
+      'bugzilla.search.ids must be an array of positive integers',
+    );
+  });
+
+  it('should reject Bugzilla search ids containing a non-positive integer', async () => {
+    const configDir = join(tempDir, 'config');
+
+    await expect(
+      normalizeCliConfig(
+        {
+          name: 'test',
+          agent: 'test',
+          promptGenerator: [
+            'bugzilla',
+            {
+              search: { ids: [0] },
+              promptTemplate: 'Review {{id}}',
+            } as unknown as BugzillaTask,
+          ],
+        },
+        join(configDir, 'config.json'),
+      ),
+    ).rejects.toThrow(
+      'bugzilla.search.ids must be an array of positive integers',
+    );
+  });
+
+  it('should accept Bugzilla search with valid advanced clauses', async () => {
+    const configDir = join(tempDir, 'config');
+
+    const config = await normalizeCliConfig(
+      {
+        name: 'test',
+        agent: 'test',
+        promptGenerator: [
+          'bugzilla',
+          {
+            search: {
+              advanced: [
+                {
+                  field: 'product',
+                  matchType: 'equals',
+                  value: 'Firefox',
+                },
+              ],
+            },
+            promptTemplate: 'Review {{id}}',
+          },
+        ],
+      },
+      join(configDir, 'config.json'),
+    );
+
+    expect(getBugzillaTask(config).search.advanced).toEqual([
+      { field: 'product', matchType: 'equals', value: 'Firefox' },
+    ]);
+  });
+
+  it('should reject Bugzilla search advanced that is not an array', async () => {
+    const configDir = join(tempDir, 'config');
+
+    await expect(
+      normalizeCliConfig(
+        {
+          name: 'test',
+          agent: 'test',
+          promptGenerator: [
+            'bugzilla',
+            {
+              search: { advanced: 'nope' },
+              promptTemplate: 'Review {{id}}',
+            } as unknown as BugzillaTask,
+          ],
+        },
+        join(configDir, 'config.json'),
+      ),
+    ).rejects.toThrow('bugzilla.search.advanced must be an array');
+  });
+
+  it('should reject Bugzilla advanced clauses that are not objects', async () => {
+    const configDir = join(tempDir, 'config');
+
+    await expect(
+      normalizeCliConfig(
+        {
+          name: 'test',
+          agent: 'test',
+          promptGenerator: [
+            'bugzilla',
+            {
+              search: { advanced: ['nope'] },
+              promptTemplate: 'Review {{id}}',
+            } as unknown as BugzillaTask,
+          ],
+        },
+        join(configDir, 'config.json'),
+      ),
+    ).rejects.toThrow('bugzilla.search.advanced[0] must be an object');
+  });
+
+  it('should reject Bugzilla advanced clauses missing a field', async () => {
+    const configDir = join(tempDir, 'config');
+
+    await expect(
+      normalizeCliConfig(
+        {
+          name: 'test',
+          agent: 'test',
+          promptGenerator: [
+            'bugzilla',
+            {
+              search: {
+                advanced: [{ matchType: 'equals', value: 'Firefox' }],
+              },
+              promptTemplate: 'Review {{id}}',
+            } as unknown as BugzillaTask,
+          ],
+        },
+        join(configDir, 'config.json'),
+      ),
+    ).rejects.toThrow('bugzilla.search.advanced[0].field must be a string');
+  });
+
+  it('should reject Bugzilla search change that is not an object', async () => {
+    const configDir = join(tempDir, 'config');
+
+    await expect(
+      normalizeCliConfig(
+        {
+          name: 'test',
+          agent: 'test',
+          promptGenerator: [
+            'bugzilla',
+            {
+              search: { change: 'nope' },
+              promptTemplate: 'Review {{id}}',
+            } as unknown as BugzillaTask,
+          ],
+        },
+        join(configDir, 'config.json'),
+      ),
+    ).rejects.toThrow('bugzilla.search.change must be an object');
+  });
+
+  it('should reject Bugzilla search change missing the from date', async () => {
+    const configDir = join(tempDir, 'config');
+
+    await expect(
+      normalizeCliConfig(
+        {
+          name: 'test',
+          agent: 'test',
+          promptGenerator: [
+            'bugzilla',
+            {
+              search: {
+                change: {
+                  field: 'bug_status',
+                  to: '2025-02-15',
+                  value: 'RESOLVED',
+                },
+              },
+              promptTemplate: 'Review {{id}}',
+            } as unknown as BugzillaTask,
+          ],
+        },
+        join(configDir, 'config.json'),
+      ),
+    ).rejects.toThrow(
+      'bugzilla.search.change.from must be a yyyy-MM-dd date string',
+    );
+  });
+
+  it('should reject GitLab search with a non-boolean dryRun', async () => {
+    const configDir = join(tempDir, 'config');
+
+    await expect(
+      normalizeCliConfig(
+        {
+          name: 'test',
+          agent: 'test',
+          promptGenerator: [
+            'gitlab',
+            {
+              search: { project: 'gitlab-org/gitlab', dryRun: 'yes' },
+              promptTemplate: 'Review {{id}}',
+            } as unknown as GitLabTask,
+          ],
+        },
+        join(configDir, 'config.json'),
+      ),
+    ).rejects.toThrow('gitlab.search.dryRun must be a boolean');
+  });
+
+  it('should reject GitLab search with a non-string state', async () => {
+    const configDir = join(tempDir, 'config');
+
+    await expect(
+      normalizeCliConfig(
+        {
+          name: 'test',
+          agent: 'test',
+          promptGenerator: [
+            'gitlab',
+            {
+              search: { project: 'gitlab-org/gitlab', state: 42 },
+              promptTemplate: 'Review {{id}}',
+            } as unknown as GitLabTask,
+          ],
+        },
+        join(configDir, 'config.json'),
+      ),
+    ).rejects.toThrow('gitlab.search.state must be a string');
+  });
+
+  it('should reject Bugzilla search components containing non-strings', async () => {
+    const configDir = join(tempDir, 'config');
+
+    await expect(
+      normalizeCliConfig(
+        {
+          name: 'test',
+          agent: 'test',
+          promptGenerator: [
+            'bugzilla',
+            {
+              search: { components: ['valid', 42] },
+              promptTemplate: 'Review {{id}}',
+            } as unknown as BugzillaTask,
+          ],
+        },
+        join(configDir, 'config.json'),
+      ),
+    ).rejects.toThrow('bugzilla.search.components must be an array of strings');
+  });
+
+  it('should reject test task config that is not an object', async () => {
+    const configDir = join(tempDir, 'config');
+
+    await expect(
+      normalizeCliConfig(
+        {
+          name: 'test',
+          agent: 'test',
+          promptGenerator: ['test', 'oops' as unknown as { prompts: ReadonlyArray<string> }],
+        },
+        join(configDir, 'config.json'),
+      ),
+    ).rejects.toThrow('test task config must be an object');
+  });
+
+  it('should reject test task config with non-string prompts', async () => {
+    const configDir = join(tempDir, 'config');
+
+    await expect(
+      normalizeCliConfig(
+        {
+          name: 'test',
+          agent: 'test',
+          promptGenerator: ['test', { prompts: [42] as unknown as ReadonlyArray<string> }],
+        },
+        join(configDir, 'config.json'),
+      ),
+    ).rejects.toThrow('test.prompts must be an array of strings');
+  });
+
+  it('should normalize a valid test task config', async () => {
+    const configDir = join(tempDir, 'config');
+
+    const config = await normalizeCliConfig(
+      {
+        name: 'test',
+        agent: 'test',
+        promptGenerator: ['test', { prompts: ['hello'] }],
+      },
+      join(configDir, 'config.json'),
+    );
+
+    if (!Array.isArray(config.promptGenerator)) {
+      throw new TypeError('Expected a tuple prompt generator config');
+    }
+    expect(config.promptGenerator[0]).toBe('test');
+  });
+
+  it('should reject json task config that is not an object', async () => {
+    const configDir = join(tempDir, 'config');
+
+    await expect(
+      normalizeCliConfig(
+        {
+          name: 'test',
+          agent: 'test',
+          promptGenerator: ['json', 'oops' as unknown as JsonTask],
+        },
+        join(configDir, 'config.json'),
+      ),
+    ).rejects.toThrow('json task config must be an object');
+  });
+
+  it('should reject json task config that specifies neither data nor dataFile', async () => {
+    const configDir = join(tempDir, 'config');
+
+    await expect(
+      normalizeCliConfig(
+        {
+          name: 'test',
+          agent: 'test',
+          promptGenerator: [
+            'json',
+            {
+              promptTemplate: 'Review {{id}}',
+            } as unknown as JsonTask,
+          ],
+        },
+        join(configDir, 'config.json'),
+      ),
+    ).rejects.toThrow(
+      'json task config must specify exactly one of json.data or json.dataFile',
+    );
+  });
+
+  it('should reject per-file task config that is not an object', async () => {
+    const configDir = join(tempDir, 'config');
+
+    await expect(
+      normalizeCliConfig(
+        {
+          name: 'test',
+          agent: 'test',
+          promptGenerator: ['per-file', 'oops' as unknown as PerFileTask],
+        },
+        join(configDir, 'config.json'),
+      ),
+    ).rejects.toThrow('per-file task config must be an object');
+  });
+
+  it('should reject batch task config that is not an object', async () => {
+    const configDir = join(tempDir, 'config');
+
+    await expect(
+      normalizeCliConfig(
+        {
+          name: 'test',
+          agent: 'test',
+          promptGenerator: ['batch', 'oops' as unknown as BatchTask],
+        },
+        join(configDir, 'config.json'),
+      ),
+    ).rejects.toThrow('batch task config must be an object');
+  });
+
+  it('should reject batch task config missing source', async () => {
+    const configDir = join(tempDir, 'config');
+
+    await expect(
+      normalizeCliConfig(
+        {
+          name: 'test',
+          agent: 'test',
+          promptGenerator: [
+            'batch',
+            {
+              summaryPromptTemplate: 'Summarize',
+              reportFile: 'report.yaml',
+            } as unknown as BatchTask,
+          ],
+        },
+        join(configDir, 'config.json'),
+      ),
+    ).rejects.toThrow('batch.source is required');
+  });
+
+  it('should reject batch task config with a non-integer batchSize', async () => {
+    const configDir = join(tempDir, 'config');
+
+    await expect(
+      normalizeCliConfig(
+        {
+          name: 'test',
+          agent: 'test',
+          promptGenerator: [
+            'batch',
+            {
+              source: ['per-file', { filePattern: 'a', promptTemplate: 'b' }],
+              summaryPromptTemplate: 'Summarize',
+              reportFile: 'report.yaml',
+              batchSize: 1.5,
+            } as unknown as BatchTask,
+          ],
+        },
+        join(configDir, 'config.json'),
+      ),
+    ).rejects.toThrow('batch.batchSize must be a positive integer');
+  });
+
+  it('should reject batch task config with a non-positive batchSize', async () => {
+    const configDir = join(tempDir, 'config');
+
+    await expect(
+      normalizeCliConfig(
+        {
+          name: 'test',
+          agent: 'test',
+          promptGenerator: [
+            'batch',
+            {
+              source: ['per-file', { filePattern: 'a', promptTemplate: 'b' }],
+              summaryPromptTemplate: 'Summarize',
+              reportFile: 'report.yaml',
+              batchSize: 0,
+            } as unknown as BatchTask,
+          ],
+        },
+        join(configDir, 'config.json'),
+      ),
+    ).rejects.toThrow('batch.batchSize must be a positive integer');
+  });
+
   it('should resolve system prompt includes relative to the config file', async () => {
     const configDir = join(tempDir, 'config');
     const cwdDir = join(tempDir, 'cwd');

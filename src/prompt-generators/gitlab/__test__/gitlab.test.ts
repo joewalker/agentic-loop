@@ -229,5 +229,148 @@ describe('GitLab', () => {
         }),
       ).rejects.toThrow('GitLab API error 400: state is invalid');
     });
+
+    it('should throw on API errors without a message field', async () => {
+      mockFetchError(500, { error: 'oops' });
+
+      const gitlab = new GitLab({ origin: 'https://api.test' });
+      await expect(
+        gitlab.searchIssues({ project: 'gitlab-org/gitlab' }),
+      ).rejects.toThrow(/^GitLab API error 500$/u);
+    });
+
+    it('should append non-JSON text bodies to API error messages', async () => {
+      vi.stubGlobal(
+        'fetch',
+        vi.fn().mockResolvedValue({
+          ok: false,
+          status: 502,
+          headers: new Headers(),
+          text: () => Promise.resolve('Bad Gateway'),
+        }),
+      );
+
+      const gitlab = new GitLab({ origin: 'https://api.test' });
+      await expect(
+        gitlab.searchIssues({ project: 'gitlab-org/gitlab' }),
+      ).rejects.toThrow('GitLab API error 502: Bad Gateway');
+    });
+
+    it('should not append an empty body to API error messages', async () => {
+      vi.stubGlobal(
+        'fetch',
+        vi.fn().mockResolvedValue({
+          ok: false,
+          status: 503,
+          headers: new Headers(),
+          text: () => Promise.resolve(''),
+        }),
+      );
+
+      const gitlab = new GitLab({ origin: 'https://api.test' });
+      await expect(
+        gitlab.searchIssues({ project: 'gitlab-org/gitlab' }),
+      ).rejects.toThrow(/^GitLab API error 503$/u);
+    });
+
+    it('should throw when a success response is not valid JSON', async () => {
+      vi.spyOn(console, 'error').mockImplementation(() => {});
+      vi.stubGlobal(
+        'fetch',
+        vi.fn().mockResolvedValue({
+          ok: true,
+          status: 200,
+          headers: new Headers(),
+          text: () => Promise.resolve('not json'),
+        }),
+      );
+
+      const gitlab = new GitLab({ origin: 'https://api.test' });
+      await expect(
+        gitlab.searchIssues({ project: 'gitlab-org/gitlab' }),
+      ).rejects.toThrow();
+      expect(console.error).toHaveBeenCalledWith('not json');
+    });
+
+    it('should throw when perPage is not an integer from 1 to 100', async () => {
+      const gitlab = new GitLab({ origin: 'https://api.test' });
+      await expect(
+        gitlab.searchIssues({
+          project: 'gitlab-org/gitlab',
+          perPage: 1.5,
+        }),
+      ).rejects.toThrow('GitLab search perPage must be an integer from 1 to 100');
+      await expect(
+        gitlab.searchIssues({
+          project: 'gitlab-org/gitlab',
+          perPage: 200,
+        }),
+      ).rejects.toThrow('GitLab search perPage must be an integer from 1 to 100');
+    });
+
+    it('should throw when maxResults is negative', async () => {
+      const gitlab = new GitLab({ origin: 'https://api.test' });
+      await expect(
+        gitlab.searchIssues({
+          project: 'gitlab-org/gitlab',
+          maxResults: -1,
+        }),
+      ).rejects.toThrow('GitLab search maxResults must be a non-negative integer');
+    });
+
+    it('should read token from a custom tokenEnv option', async () => {
+      vi.stubEnv('CUSTOM_GL_TOKEN', 'custom-env-token');
+
+      const gitlab = new GitLab({
+        origin: 'https://api.test',
+        tokenEnv: 'CUSTOM_GL_TOKEN',
+      });
+      await gitlab.searchIssues({ project: 'gitlab-org/gitlab' });
+
+      expect(fetchedHeaders()['PRIVATE-TOKEN']).toBe('custom-env-token');
+    });
+
+    it('should include confidential query param when set', async () => {
+      const gitlab = new GitLab({ origin: 'https://api.test' });
+      await gitlab.searchIssues({
+        project: 'gitlab-org/gitlab',
+        confidential: true,
+      });
+
+      expect(parseQuery(fetchedUrl())).toContainEqual(['confidential', 'true']);
+    });
+
+    it('should stop within a page when items overflow maxResults', async () => {
+      mockFetch([
+        { iid: 1, title: 'one', web_url: 'https://gitlab.test/1' },
+        { iid: 2, title: 'two', web_url: 'https://gitlab.test/2' },
+        { iid: 3, title: 'three', web_url: 'https://gitlab.test/3' },
+      ]);
+
+      const gitlab = new GitLab({ origin: 'https://api.test' });
+      const issues = await gitlab.searchIssues({
+        project: 'gitlab-org/gitlab',
+        maxResults: 2,
+        perPage: 10,
+      });
+
+      expect(issues.map(issue => issue.iid)).toEqual([1, 2]);
+      expect(fetch).toHaveBeenCalledTimes(1);
+    });
+
+    it('should log the query URL when logQuery is enabled', async () => {
+      const log = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+      const gitlab = new GitLab({ origin: 'https://api.test' });
+      await gitlab.searchIssues({
+        project: 'gitlab-org/gitlab',
+        logQuery: true,
+      });
+
+      expect(log).toHaveBeenCalledTimes(1);
+      expect(log.mock.calls[0][0]).toMatch(
+        /^https:\/\/api\.test\/projects\/gitlab-org%2Fgitlab\/issues\?/u,
+      );
+    });
   });
 });

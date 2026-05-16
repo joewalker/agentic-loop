@@ -164,6 +164,40 @@ describe('GitLabPromptGenerator', () => {
     expect(prompts[0].prompt).toBe('Issue gitlab-org/gitlab#200: Still to do');
   });
 
+  it('should fall back to empty strings for missing issue fields', async () => {
+    mockSearchIssues.mockResolvedValue([
+      {
+        iid: 1,
+        title: 'minimal issue',
+        web_url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/1',
+        state: 'opened',
+      },
+    ]);
+
+    const generator = new GitLabPromptGenerator({
+      search: { project: 'gitlab-org/gitlab' },
+      promptTemplate:
+        '{{author}}|{{assignee}}|{{assignees}}|{{labels}}|{{milestone}}|{{commentCount}}|{{createdAt}}|{{updatedAt}}|{{closedAt}}|{{description}}',
+    });
+    const loopState = new LoopState('ignored.json');
+    const prompts: Array<Prompt> = [];
+
+    for await (const prompt of generator.generate(loopState)) {
+      prompts.push(prompt);
+    }
+
+    expect(prompts[0].prompt).toBe('|||||0||||');
+  });
+
+  it('should expose a static create() helper that returns an instance', async () => {
+    const generator = await GitLabPromptGenerator.create({
+      search: { project: 'gitlab-org/gitlab' },
+      promptTemplate: 'Issue {{id}}',
+    });
+
+    expect(generator).toBeInstanceOf(GitLabPromptGenerator);
+  });
+
   it('should pass connection options and search params to GitLab', async () => {
     mockSearchIssues.mockResolvedValue([]);
 

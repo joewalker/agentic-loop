@@ -276,5 +276,156 @@ describe('GitHub', () => {
         }),
       ).rejects.toThrow('GitHub API error 422: Validation Failed');
     });
+
+    it('should throw on API errors without a message field', async () => {
+      mockFetchError(500, { error: 'oops' });
+
+      const github = new GitHub({ origin: 'https://api.test' });
+      await expect(
+        github.searchIssues({
+          repository: 'octocat/Hello-World',
+          query: 'is:open',
+        }),
+      ).rejects.toThrow(/^GitHub API error 500$/u);
+    });
+
+    it('should append non-JSON text bodies to API error messages', async () => {
+      vi.stubGlobal(
+        'fetch',
+        vi.fn().mockResolvedValue({
+          ok: false,
+          status: 502,
+          text: () => Promise.resolve('Bad Gateway'),
+        }),
+      );
+
+      const github = new GitHub({ origin: 'https://api.test' });
+      await expect(
+        github.searchIssues({
+          repository: 'octocat/Hello-World',
+          query: 'is:open',
+        }),
+      ).rejects.toThrow('GitHub API error 502: Bad Gateway');
+    });
+
+    it('should not append an empty body to API error messages', async () => {
+      vi.stubGlobal(
+        'fetch',
+        vi.fn().mockResolvedValue({
+          ok: false,
+          status: 503,
+          text: () => Promise.resolve(''),
+        }),
+      );
+
+      const github = new GitHub({ origin: 'https://api.test' });
+      await expect(
+        github.searchIssues({
+          repository: 'octocat/Hello-World',
+          query: 'is:open',
+        }),
+      ).rejects.toThrow(/^GitHub API error 503$/u);
+    });
+
+    it('should throw when a success response is not valid JSON', async () => {
+      vi.spyOn(console, 'error').mockImplementation(() => {});
+      vi.stubGlobal(
+        'fetch',
+        vi.fn().mockResolvedValue({
+          ok: true,
+          status: 200,
+          text: () => Promise.resolve('not json'),
+        }),
+      );
+
+      const github = new GitHub({ origin: 'https://api.test' });
+      await expect(
+        github.searchIssues({
+          repository: 'octocat/Hello-World',
+          query: 'is:open',
+        }),
+      ).rejects.toThrow();
+      expect(console.error).toHaveBeenCalledWith('not json');
+    });
+
+    it('should throw when perPage is not an integer from 1 to 100', async () => {
+      const github = new GitHub({ origin: 'https://api.test' });
+      await expect(
+        github.searchIssues({
+          repository: 'octocat/Hello-World',
+          query: 'is:open',
+          perPage: 1.5,
+        }),
+      ).rejects.toThrow('GitHub search perPage must be an integer from 1 to 100');
+      await expect(
+        github.searchIssues({
+          repository: 'octocat/Hello-World',
+          query: 'is:open',
+          perPage: 200,
+        }),
+      ).rejects.toThrow('GitHub search perPage must be an integer from 1 to 100');
+    });
+
+    it('should throw when maxResults is negative', async () => {
+      const github = new GitHub({ origin: 'https://api.test' });
+      await expect(
+        github.searchIssues({
+          repository: 'octocat/Hello-World',
+          query: 'is:open',
+          maxResults: -1,
+        }),
+      ).rejects.toThrow('GitHub search maxResults must be a non-negative integer');
+    });
+
+    it('should read token from a custom tokenEnv option', async () => {
+      vi.stubEnv('CUSTOM_GH_TOKEN', 'custom-env-token');
+
+      const github = new GitHub({
+        origin: 'https://api.test',
+        tokenEnv: 'CUSTOM_GH_TOKEN',
+      });
+      await github.searchIssues({
+        repository: 'octocat/Hello-World',
+        query: 'is:open',
+      });
+
+      expect(fetchedHeaders()['Authorization']).toBe('Bearer custom-env-token');
+    });
+
+    it('should stop within a page when items overflow maxResults', async () => {
+      mockFetch({
+        total_count: 5,
+        items: [
+          { number: 1, title: 'one', html_url: 'https://github.test/1' },
+          { number: 2, title: 'two', html_url: 'https://github.test/2' },
+          { number: 3, title: 'three', html_url: 'https://github.test/3' },
+        ],
+      });
+
+      const github = new GitHub({ origin: 'https://api.test' });
+      const issues = await github.searchIssues({
+        repository: 'octocat/Hello-World',
+        query: 'is:open',
+        maxResults: 2,
+        perPage: 10,
+      });
+
+      expect(issues.map(issue => issue.number)).toEqual([1, 2]);
+      expect(fetch).toHaveBeenCalledTimes(1);
+    });
+
+    it('should log the query URL when logQuery is enabled', async () => {
+      const log = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+      const github = new GitHub({ origin: 'https://api.test' });
+      await github.searchIssues({
+        repository: 'octocat/Hello-World',
+        query: 'is:open',
+        logQuery: true,
+      });
+
+      expect(log).toHaveBeenCalledTimes(1);
+      expect(log.mock.calls[0][0]).toMatch(/^https:\/\/api\.test\/search\/issues\?/u);
+    });
   });
 });

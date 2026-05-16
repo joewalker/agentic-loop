@@ -190,6 +190,40 @@ describe('GitHubPromptGenerator', () => {
     expect(mockSearchIssues).toHaveBeenCalledWith(search);
   });
 
+  it('should fall back to empty strings for missing issue fields', async () => {
+    mockSearchIssues.mockResolvedValue([
+      {
+        number: 1,
+        title: 'minimal issue',
+        html_url: 'https://github.com/octocat/Hello-World/issues/1',
+        state: 'open',
+      },
+    ]);
+
+    const generator = new GitHubPromptGenerator({
+      search: { repository: 'octocat/Hello-World', query: 'is:open' },
+      promptTemplate:
+        '{{author}}|{{assignee}}|{{assignees}}|{{labels}}|{{milestone}}|{{commentCount}}|{{createdAt}}|{{updatedAt}}|{{closedAt}}|{{body}}',
+    });
+    const loopState = new LoopState('ignored.json');
+    const prompts: Array<Prompt> = [];
+
+    for await (const prompt of generator.generate(loopState)) {
+      prompts.push(prompt);
+    }
+
+    expect(prompts[0].prompt).toBe('|||||0||||');
+  });
+
+  it('should expose a static create() helper that returns an instance', async () => {
+    const generator = await GitHubPromptGenerator.create({
+      search: { repository: 'octocat/Hello-World', query: 'is:open' },
+      promptTemplate: 'Issue {{id}}',
+    });
+
+    expect(generator).toBeInstanceOf(GitHubPromptGenerator);
+  });
+
   it('should reject repositories that are not in owner/repo form', async () => {
     mockSearchIssues.mockResolvedValue([]);
 

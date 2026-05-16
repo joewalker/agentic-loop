@@ -56,7 +56,8 @@ export default defineConfig({
         '**/node_modules/**',
         '**/dist/**',
         '**/.claude/worktrees/**',
-        // Thin wrappers around external SDK / CLI processes — exercising them
+        '**/__test__/**',
+        // Thin wrappers around external SDK / CLI processes - exercising them
         // would require live network or a real `codex` binary.
         'src/agents/claude-sdk.ts',
         'src/agents/codex-cli.ts',

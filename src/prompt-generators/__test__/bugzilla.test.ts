@@ -155,4 +155,13 @@ describe('BugzillaPromptGenerator', () => {
 
     expect(mockSearch).toHaveBeenCalledWith(searchParams);
   });
+
+  it('should expose a static create() helper that returns an instance', async () => {
+    const generator = await BugzillaPromptGenerator.create({
+      search: { product: 'Core' },
+      promptTemplate: 'Bug {{id}}',
+    });
+
+    expect(generator).toBeInstanceOf(BugzillaPromptGenerator);
+  });
 });
