@@ -7,10 +7,11 @@ A framework for running generated prompts through coding agents in an automated 
 
 ```sh
 pnpm install
+pnpm tsc
 pnpm test
 ```
 
-`pnpm install` automatically builds the project. You can rebuild manually with `pnpm tsc`.
+Use `pnpm build` when you need the package-ready `dist` output used by `pnpm pack` and `pnpm publish`.
 
 ## Opt-in Live Tests
 
@@ -71,8 +72,29 @@ There are two ways to run a loop: from a JSON config file via the CLI, or progra
 
 ### CLI
 
+The CLI requires Node.js 22 or newer.
+
+Run it without installing:
+
 ```sh
-pnpm tsc
+pnpx loop-the-loop config.json
+npx loop-the-loop config.json
+```
+
+Or install it first:
+
+```sh
+pnpm add --global loop-the-loop
+loop-the-loop config.json
+
+npm install --global loop-the-loop
+loop-the-loop config.json
+```
+
+From a local checkout:
+
+```sh
+pnpm build
 node dist/cli.js config.json
 ```
 
@@ -120,7 +142,7 @@ loop({
 }).catch(console.error);
 ```
 
-See `src/examples/review.ts` and `src/examples/bugzilla-retriage.ts` for complete working examples.
+See [`src/examples/review.ts`](https://github.com/joewalker/loop-the-loop/blob/main/src/examples/review.ts) and [`src/examples/bugzilla-retriage.ts`](https://github.com/joewalker/loop-the-loop/blob/main/src/examples/bugzilla-retriage.ts) for complete working examples.
 
 ## Configuration
 
@@ -204,6 +226,7 @@ Source: `src/agents/claude-sdk.ts`
 
 Invokes the Codex CLI (`codex exec`) as an external process.
 
+- The `codex` binary must be installed, authenticated, and available on `PATH`
 - Sandbox mode: read-only
 - Custom model via `CODEX_MODEL` environment variable
 - Does not support `allowedTools`, `disallowedTools`, or `outputSchema` (warns and ignores)
@@ -683,4 +706,24 @@ See `src/util/expand-prompt.ts` for the implementation.
 
 ## Examples
 
-See the `examples` folder for more examples.
+See the [`src/examples`](https://github.com/joewalker/loop-the-loop/tree/main/src/examples) folder for more examples.
+
+## Publishing
+
+Before publishing, update the package version in `package.json`, then run:
+
+```sh
+pnpm format
+pnpm tsc
+pnpm test
+pnpm lint
+pnpm pack --dry-run
+```
+
+`pnpm pack --dry-run` runs the package build through `prepack` and prints the files that would be published.
+
+Publish from a clean worktree:
+
+```sh
+pnpm publish
+```

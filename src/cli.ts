@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 /* eslint-disable no-console */
 import process from 'node:process';
 
@@ -5,11 +6,12 @@ import { loop } from './loop.js';
 import { loadCliConfig, parseArgs } from './util/load-cli-config.js';
 
 /**
- * CLI entry point loop-the-loop.
+ * CLI entry point for loop-the-loop.
  *
  * Usage:
- *   deno run --allow-all src/cli.ts [--verbose] [--maxPrompts=N] <config.json>
- *   ./dist/loop-the-loop [--verbose] [--maxPrompts=N] <config.json>
+ *   npx loop-the-loop [--verbose] [--maxPrompts=N] <config.json>
+ *   loop-the-loop [--verbose] [--maxPrompts=N] <config.json>   (after global install)
+ *   node dist/cli.js [--verbose] [--maxPrompts=N] <config.json> (from a local checkout)
  *
  * The config file should be a JSON object matching LoopCliConfig
  * with string values for agent/reporter and a tuple for promptGenerator.
