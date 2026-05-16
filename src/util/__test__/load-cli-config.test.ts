@@ -202,6 +202,71 @@ describe('loadCliConfig', () => {
     expect(getBugzillaTask(config).search).toBe(search);
   });
 
+  it('should reject Bugzilla config without an object search', async () => {
+    const configDir = join(tempDir, 'config');
+
+    await expect(
+      normalizeCliConfig(
+        {
+          name: 'test',
+          agent: 'test',
+          promptGenerator: [
+            'bugzilla',
+            {
+              promptTemplate: 'Review {{id}}',
+              basePath: './prompts',
+            } as unknown as BugzillaTask,
+          ],
+        },
+        join(configDir, 'config.json'),
+      ),
+    ).rejects.toThrow('bugzilla.search must be an object');
+  });
+
+  it('should reject Bugzilla config without a string promptTemplate', async () => {
+    const configDir = join(tempDir, 'config');
+
+    await expect(
+      normalizeCliConfig(
+        {
+          name: 'test',
+          agent: 'test',
+          promptGenerator: [
+            'bugzilla',
+            {
+              search: {},
+              basePath: './prompts',
+            } as unknown as BugzillaTask,
+          ],
+        },
+        join(configDir, 'config.json'),
+      ),
+    ).rejects.toThrow('bugzilla.promptTemplate must be a string');
+  });
+
+  it('should reject malformed Bugzilla search field values', async () => {
+    const configDir = join(tempDir, 'config');
+
+    await expect(
+      normalizeCliConfig(
+        {
+          name: 'test',
+          agent: 'test',
+          promptGenerator: [
+            'bugzilla',
+            {
+              search: {
+                components: 'DOM: Workers',
+              },
+              promptTemplate: 'Review {{id}}',
+            } as unknown as BugzillaTask,
+          ],
+        },
+        join(configDir, 'config.json'),
+      ),
+    ).rejects.toThrow('bugzilla.search.components must be an array of strings');
+  });
+
   it('should normalize GitHub task basePath relative to the config file', async () => {
     const configDir = join(tempDir, 'config');
     await mkdir(configDir, { recursive: true });

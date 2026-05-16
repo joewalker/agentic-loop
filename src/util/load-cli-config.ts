@@ -135,7 +135,7 @@ function normalizePromptGenerator(
     ];
   }
 
-  if (type === 'bugzilla' && isBugzillaTaskConfig(config)) {
+  if (type === 'bugzilla') {
     return [type, normalizeBugzillaTaskConfig(config, configDir)];
   }
 
@@ -150,9 +150,11 @@ function normalizePromptGenerator(
  * Normalize Bugzilla task config values loaded from JSON.
  */
 function normalizeBugzillaTaskConfig(
-  config: BugzillaTask,
+  config: unknown,
   configDir: string,
 ): BugzillaTask {
+  assertBugzillaTaskConfig(config);
+
   return {
     ...config,
     basePath: normalizeBasePath(config.basePath, configDir),
@@ -263,26 +265,219 @@ function isPerFileTaskConfig(value: unknown): value is PerFileTask {
 }
 
 /**
- * Check whether an unknown value has the shape of a Bugzilla task config.
- */
-function isBugzillaTaskConfig(value: unknown): value is BugzillaTask {
-  return (
-    typeof value === 'object' &&
-    value !== null &&
-    'search' in value &&
-    typeof value.search === 'object' &&
-    value.search !== null &&
-    'promptTemplate' in value &&
-    typeof value.promptTemplate === 'string' &&
-    (!('basePath' in value) || typeof value.basePath === 'string')
-  );
-}
-
-/**
  * Check whether an unknown value is a plain object.
  */
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+/**
+ * Assert that an unknown value has the runtime shape required for a Bugzilla
+ * task config.
+ */
+function assertBugzillaTaskConfig(
+  value: unknown,
+): asserts value is BugzillaTask {
+  if (!isRecord(value)) {
+    throw new Error('bugzilla task config must be an object');
+  }
+
+  if (
+    !('promptTemplate' in value) ||
+    typeof value['promptTemplate'] !== 'string'
+  ) {
+    throw new Error('bugzilla.promptTemplate must be a string');
+  }
+
+  if ('basePath' in value && typeof value['basePath'] !== 'string') {
+    throw new Error('bugzilla.basePath must be a string');
+  }
+
+  const search = value['search'];
+  if (!isRecord(search)) {
+    throw new Error('bugzilla.search must be an object');
+  }
+
+  assertBugzillaSearchParams(search);
+}
+
+/**
+ * Assert that Bugzilla search params loaded from config use the expected
+ * runtime field shapes.
+ */
+function assertBugzillaSearchParams(search: Record<string, unknown>): void {
+  assertKnownProperties(
+    search,
+    // Keep this list in sync with SearchParams in bugzilla-types.ts and the
+    // bugzillaSearchParams schema definition.
+    [
+      'advanced',
+      'assignedTo',
+      'bugFields',
+      'bugSeverity',
+      'bugStatus',
+      'change',
+      'components',
+      'dryRun',
+      'keywords',
+      'logQuery',
+      'product',
+    ],
+    'bugzilla.search',
+  );
+
+  assertOptionalBoolean(search, 'dryRun', 'bugzilla.search.dryRun');
+  assertOptionalBoolean(search, 'logQuery', 'bugzilla.search.logQuery');
+  assertOptionalString(search, 'product', 'bugzilla.search.product');
+  assertOptionalString(search, 'assignedTo', 'bugzilla.search.assignedTo');
+  assertOptionalStringArray(search, 'components', 'bugzilla.search.components');
+  assertOptionalStringArray(search, 'bugStatus', 'bugzilla.search.bugStatus');
+  assertOptionalStringArray(search, 'keywords', 'bugzilla.search.keywords');
+  assertOptionalStringArray(
+    search,
+    'bugSeverity',
+    'bugzilla.search.bugSeverity',
+  );
+  assertOptionalStringArray(search, 'bugFields', 'bugzilla.search.bugFields');
+
+  if ('advanced' in search) {
+    assertBugzillaAdvancedClauses(search['advanced']);
+  }
+
+  if ('change' in search) {
+    assertBugzillaChangeClause(search['change']);
+  }
+}
+
+/**
+ * Assert that a Bugzilla advanced search value is an array of valid clauses.
+ */
+function assertBugzillaAdvancedClauses(value: unknown): void {
+  if (!Array.isArray(value)) {
+    throw new Error('bugzilla.search.advanced must be an array');
+  }
+
+  value.forEach((clause, index) => {
+    const prefix = `bugzilla.search.advanced[${index}]`;
+    if (!isRecord(clause)) {
+      throw new Error(`${prefix} must be an object`);
+    }
+
+    assertKnownProperties(clause, ['field', 'matchType', 'value'], prefix);
+    assertRequiredString(clause, 'field', `${prefix}.field`);
+    assertRequiredString(clause, 'matchType', `${prefix}.matchType`);
+    assertRequiredString(clause, 'value', `${prefix}.value`);
+  });
+}
+
+/**
+ * Assert that a Bugzilla change search value is a valid clause.
+ */
+function assertBugzillaChangeClause(value: unknown): void {
+  if (!isRecord(value)) {
+    throw new Error('bugzilla.search.change must be an object');
+  }
+
+  assertKnownProperties(
+    value,
+    ['field', 'from', 'to', 'value'],
+    'bugzilla.search.change',
+  );
+  assertRequiredString(value, 'field', 'bugzilla.search.change.field');
+  assertRequiredDateField(value, 'from', 'bugzilla.search.change.from');
+  assertRequiredDateField(value, 'to', 'bugzilla.search.change.to');
+  assertRequiredString(value, 'value', 'bugzilla.search.change.value');
+}
+
+/**
+ * Assert that an object contains only known properties.
+ */
+function assertKnownProperties(
+  value: Record<string, unknown>,
+  knownProperties: ReadonlyArray<string>,
+  prefix: string,
+): void {
+  for (const key of Object.keys(value)) {
+    if (!knownProperties.includes(key)) {
+      throw new Error(`${prefix}.${key} is not supported`);
+    }
+  }
+}
+
+/**
+ * Assert that an optional object property is a boolean.
+ */
+function assertOptionalBoolean(
+  value: Record<string, unknown>,
+  key: string,
+  field: string,
+): void {
+  if (key in value && typeof value[key] !== 'boolean') {
+    throw new Error(`${field} must be a boolean`);
+  }
+}
+
+/**
+ * Assert that an optional object property is a string.
+ */
+function assertOptionalString(
+  value: Record<string, unknown>,
+  key: string,
+  field: string,
+): void {
+  if (key in value && typeof value[key] !== 'string') {
+    throw new Error(`${field} must be a string`);
+  }
+}
+
+/**
+ * Assert that an object property is a required string.
+ */
+function assertRequiredString(
+  value: Record<string, unknown>,
+  key: string,
+  field: string,
+): void {
+  if (!(key in value) || typeof value[key] !== 'string') {
+    throw new Error(`${field} must be a string`);
+  }
+}
+
+/**
+ * Assert that an optional object property is an array of strings.
+ */
+function assertOptionalStringArray(
+  value: Record<string, unknown>,
+  key: string,
+  field: string,
+): void {
+  if (!(key in value)) {
+    return;
+  }
+
+  const array = value[key];
+  if (!Array.isArray(array) || array.some(item => typeof item !== 'string')) {
+    throw new Error(`${field} must be an array of strings`);
+  }
+}
+
+/**
+ * Assert that an object property is a Date or a string parseDateField can
+ * validate later.
+ */
+function assertRequiredDateField(
+  value: Record<string, unknown>,
+  key: string,
+  field: string,
+): void {
+  if (!(key in value)) {
+    throw new Error(`${field} must be a yyyy-MM-dd date string`);
+  }
+
+  const fieldValue = value[key];
+  if (!(fieldValue instanceof Date) && typeof fieldValue !== 'string') {
+    throw new Error(`${field} must be a yyyy-MM-dd date string`);
+  }
 }
 
 /**
