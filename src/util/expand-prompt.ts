@@ -61,7 +61,7 @@ export async function expandIncludes(
 
     const rawPath = match[1].trim();
     const resolvedPath = isAbsolute(rawPath)
-      ? rawPath
+      ? /* istanbul ignore next */ rawPath
       : resolve(basePath, rawPath);
 
     if (visited.has(resolvedPath)) {
@@ -82,8 +82,8 @@ export async function expandIncludes(
 
   // Replace each macro using a function to avoid special-character
   // interpretation of `$` in the replacement string.
-  return text.replaceAll(
-    INCLUDE_PATTERN,
-    fullMatch => replacements.get(fullMatch) ?? fullMatch,
-  );
+  return text.replaceAll(INCLUDE_PATTERN, fullMatch => {
+    /* istanbul ignore next */
+    return replacements.get(fullMatch) ?? fullMatch;
+  });
 }

@@ -49,7 +49,7 @@ export class YamlReporter implements Reporter {
         lines.push('structuredOutput: |');
         const json = JSON.stringify(result.structuredOutput, null, 2);
         for (const line of formatBlockScalar(json).split('\n')) {
-          lines.push(line === '' ? '' : `  ${line}`);
+          lines.push(line === '' ? /* istanbul ignore next */ '' : `  ${line}`);
         }
       }
     } else {

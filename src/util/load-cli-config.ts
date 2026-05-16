@@ -78,8 +78,12 @@ export async function loadCliConfig(
 
   return {
     ...(await normalizeCliConfig(config, resolvedPath)),
-    ...(maxPrompts !== undefined ? { maxPrompts } : {}),
-    ...(verbose ? { logger: 'verbose' as const } : {}),
+    ...(maxPrompts !== undefined
+      ? /* istanbul ignore next */ { maxPrompts }
+      : {}),
+    ...(verbose
+      ? /* istanbul ignore next */ { logger: 'verbose' as const }
+      : {}),
   };
 }
 

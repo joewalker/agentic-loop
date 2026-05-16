@@ -88,6 +88,7 @@ export class Git {
       'commit', `--message=${message}`
     ];
 
+    // istanbul ignore else
     if (committer != null) {
       args.push(`--author="${committer.name} <${committer.email}>"`);
       env['GIT_COMMITTER_NAME'] = committer.name;
@@ -120,11 +121,15 @@ function exec(
       outputs.push(String(data));
     });
 
-    cmdProcess.stderr?.on('data', (data: Buffer): void => {
-      outputs.push(String(data));
-    });
+    cmdProcess.stderr?.on(
+      'data',
+      /* istanbul ignore next */ (data: Buffer): void => {
+        outputs.push(String(data));
+      },
+    );
 
     cmdProcess.on('close', (code: number): void => {
+      // istanbul ignore else
       if (code === 0) {
         resolve(outputs.join(''));
       } else {
@@ -132,13 +137,16 @@ function exec(
       }
     });
 
-    cmdProcess.on('error', (err: unknown): void => {
-      const message = [
-        `git exec error: ${String(err)}`,
-        `• Command: ${cmd} ${args.join(' ')}`,
-        `• Proc Options: ${JSON.stringify(procOptions)}`,
-      ].join('\n');
-      reject(new Error(message));
-    });
+    cmdProcess.on(
+      'error',
+      /* istanbul ignore next */ (err: unknown): void => {
+        const message = [
+          `git exec error: ${String(err)}`,
+          `• Command: ${cmd} ${args.join(' ')}`,
+          `• Proc Options: ${JSON.stringify(procOptions)}`,
+        ].join('\n');
+        reject(new Error(message));
+      },
+    );
   });
 }

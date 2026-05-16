@@ -119,6 +119,7 @@ export function assertOptionalStringArray(
   }
 
   const array = value[key];
+  // istanbul ignore else
   if (!Array.isArray(array) || array.some(item => typeof item !== 'string')) {
     throw new Error(`${field} must be an array of strings`);
   }

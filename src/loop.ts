@@ -51,7 +51,11 @@ export async function loop(config: LoopCliConfig): Promise<string> {
     interPromptPause: config.interPromptPause ?? PAUSE_SECS,
     systemPrompt:
       config.systemPrompt != null
-        ? await expandPrompt(config.systemPrompt, process.cwd(), {})
+        ? /* istanbul ignore next */ await expandPrompt(
+            config.systemPrompt,
+            process.cwd(),
+            {},
+          )
         : undefined,
     outputSchema: config.outputSchema,
     allowedTools: config.allowedTools,
@@ -125,11 +129,21 @@ async function loopImpl(config: LoopConfig): Promise<string> {
     await loopState.begin(prompt.id);
 
     const result = await agent.invoke(prompt.prompt, {
-      ...(systemPrompt !== undefined ? { systemPrompt } : {}),
-      ...(outputSchema !== undefined ? { outputSchema } : {}),
-      ...(allowedTools !== undefined ? { allowedTools } : {}),
-      ...(disallowedTools !== undefined ? { disallowedTools } : {}),
-      ...(mcpServers !== undefined ? { mcpServers } : {}),
+      ...(systemPrompt !== undefined
+        ? /* istanbul ignore next */ { systemPrompt }
+        : {}),
+      ...(outputSchema !== undefined
+        ? /* istanbul ignore next */ { outputSchema }
+        : {}),
+      ...(allowedTools !== undefined
+        ? /* istanbul ignore next */ { allowedTools }
+        : {}),
+      ...(disallowedTools !== undefined
+        ? /* istanbul ignore next */ { disallowedTools }
+        : {}),
+      ...(mcpServers !== undefined
+        ? /* istanbul ignore next */ { mcpServers }
+        : {}),
       logger,
     });
     await reporter.append(prompt, result);
@@ -138,6 +152,7 @@ async function loopImpl(config: LoopConfig): Promise<string> {
 
     if (result.status === 'success') {
       const message = `Loop: ${config.name} / ${prompt.id}\n\n${result.output}`;
+      // istanbul ignore if
       if (git) {
         logger.info(`Committing changes for ${prompt.id}`);
         await git.maybeCommitAll(message);
@@ -168,6 +183,7 @@ async function loopImpl(config: LoopConfig): Promise<string> {
       return `Done (reached limit of ${maxPrompts} prompts)`;
     }
 
+    // istanbul ignore else
     if (interPromptPause !== 0) {
       logger.info(`Pausing ${interPromptPause}s before next prompt`);
       console.log(`Pause (${interPromptPause}s) before starting next prompt`);

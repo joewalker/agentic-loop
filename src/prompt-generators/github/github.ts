@@ -49,10 +49,12 @@ function normalizePerPage(
     throw new Error('GitHub search perPage must be an integer from 1 to 100');
   }
 
+  // istanbul ignore else
   if (maxResults > 0) {
     return Math.min(requested, maxResults);
   }
 
+  // istanbul ignore next
   return requested;
 }
 

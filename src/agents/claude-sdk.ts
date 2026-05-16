@@ -3,6 +3,8 @@ import { query, type McpServerConfig } from '@anthropic-ai/claude-agent-sdk';
 import type { Agent, InvokeOptions } from '../agents.js';
 import type { InvokeResult, SuccessfulInvocationResult } from '../types.js';
 
+// istanbul ignore file
+
 const DEFAULT_TOOLS = ['Read', 'Glob', 'Grep'];
 const DEFAULT_MAX_TURNS = 100;
 

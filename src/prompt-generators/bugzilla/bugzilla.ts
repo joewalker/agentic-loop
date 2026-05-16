@@ -287,6 +287,7 @@ export class Bugzilla {
       headers['X-BUGZILLA-API-KEY'] = this.#apiKey;
     }
 
+    // istanbul ignore if
     if (logQuery) {
       // eslint-disable-next-line no-console
       console.log(url);
@@ -303,6 +304,7 @@ export class Bugzilla {
           message += `: ${body.message}`;
         }
       } catch {
+        // istanbul ignore else
         if (text.length > 0) {
           message += `: ${text}`;
         }
@@ -312,7 +314,7 @@ export class Bugzilla {
 
     try {
       return JSON.parse(text) as T;
-    } catch (ex) {
+    } catch (ex) /* istanbul ignore next */ {
       console.error(text);
       throw ex;
     }

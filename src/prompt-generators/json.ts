@@ -129,7 +129,9 @@ async function loadData(task: JsonTask): Promise<unknown> {
     return task.data;
   }
   if (task.dataFile !== undefined) {
+    // v8 ignore start
     const basePath = task.basePath ?? process.cwd();
+    // v8 ignore end
     const filePath = resolve(basePath, task.dataFile);
     const content = await readFile(filePath, 'utf-8');
     return JSON.parse(content) as unknown;

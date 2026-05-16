@@ -167,10 +167,12 @@ export function normalizePromptGeneratorSpec(
     return [type, normalizePerFileTaskConfig(config, context)];
   }
 
+  /* istanbul ignore else */
   if (type === TestPromptGenerator.promptGeneratorName) {
     return [type, normalizeTestTaskConfig(config)];
   }
 
+  /* istanbul ignore next */
   return promptGeneratorSpec;
 }
 

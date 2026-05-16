@@ -4,14 +4,15 @@
 // @module-tag agent
 // @module-tag codex-cli
 
+import { CodexCLIAgent } from 'loop-the-loop/agents/codex-cli';
+import { describe, expect, it } from 'vitest';
+
 import {
   CHEAP_TEST_ANSWER,
   CHEAP_TEST_PROMPT,
   invokeLiveTestPrompt,
   normalizeScalarAnswer,
-} from 'loop-the-loop/agents/__test__/live-agent-harness';
-import { CodexCLIAgent } from 'loop-the-loop/agents/codex-cli';
-import { describe, expect, it } from 'vitest';
+} from './live-agent-harness.js';
 
 describe('Codex CLI live agent', () => {
   it(

@@ -4,14 +4,15 @@
 // @module-tag agent
 // @module-tag claude-sdk
 
+import { ClaudeSDKAgent } from 'loop-the-loop/agents/claude-sdk';
+import { describe, expect, it } from 'vitest';
+
 import {
   CHEAP_TEST_ANSWER,
   CHEAP_TEST_PROMPT,
   invokeLiveTestPrompt,
   normalizeScalarAnswer,
-} from 'loop-the-loop/agents/__test__/live-agent-harness';
-import { ClaudeSDKAgent } from 'loop-the-loop/agents/claude-sdk';
-import { describe, expect, it } from 'vitest';
+} from './live-agent-harness.js';
 
 describe('Claude SDK live agent', () => {
   it(

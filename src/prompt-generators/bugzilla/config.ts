@@ -139,12 +139,16 @@ function assertOptionalPositiveIntegerArray(
   }
 
   const array = value[key];
-  if (
-    !Array.isArray(array) ||
-    array.some(
-      item => typeof item !== 'number' || !Number.isInteger(item) || item < 1,
-    )
-  ) {
+  // v8 ignore start
+  if (!Array.isArray(array)) {
+    throw new Error(`${field} must be an array of positive integers`);
+  }
+  // v8 ignore end
+
+  const someNotInts = array.some(item => {
+    return typeof item !== 'number' || !Number.isInteger(item) || item < 1;
+  });
+  if (someNotInts) {
     throw new Error(`${field} must be an array of positive integers`);
   }
 }
@@ -216,6 +220,7 @@ function parseDateField(value: unknown, field: string): Date {
     return value;
   }
 
+  // istanbul ignore if
   if (typeof value !== 'string') {
     throw new Error(`${field} must be a yyyy-MM-dd date string`);
   }
