@@ -19,11 +19,8 @@ describe('Claude SDK live agent', () => {
     'answers a cheap generated test prompt',
     { timeout: 60_000, retry: { count: 1, delay: 1_000 } },
     async () => {
-      const invocation = await invokeLiveTestPrompt(
-        new ClaudeSDKAgent({ maxTurns: 2 }),
-        CHEAP_TEST_PROMPT,
-        { allowedTools: [] },
-      );
+      const agent = await ClaudeSDKAgent.create({ maxTurns: 2 });
+      const invocation = await invokeLiveTestPrompt(agent, CHEAP_TEST_PROMPT);
 
       expect(invocation.prompt).toStrictEqual({
         id: '0',

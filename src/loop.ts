@@ -1,8 +1,6 @@
 /* eslint-disable no-console */
 import { join } from 'node:path';
 
-import type { McpServerConfig } from '@anthropic-ai/claude-agent-sdk';
-
 import { createAgent, type Agent } from './agents.js';
 import { createLogger, type Logger } from './loggers.js';
 import {
@@ -14,8 +12,7 @@ import {
   DEFAULT_REPORTER,
   type Reporter,
 } from './reporters.js';
-import type { LoopCliConfig, OutputSchema } from './types.js';
-import { expandPrompt } from './util/expand-prompt.js';
+import type { LoopCliConfig } from './types.js';
 import { Git } from './util/git.js';
 import { LoopState } from './util/loop-state.js';
 
@@ -49,17 +46,6 @@ export async function loop(config: LoopCliConfig): Promise<string> {
         : reporter,
     maxPrompts: config.maxPrompts ?? Infinity,
     interPromptPause: config.interPromptPause ?? PAUSE_SECS,
-    systemPrompt:
-      config.systemPrompt != null
-        ? /* istanbul ignore next */ await expandPrompt(
-            config.systemPrompt,
-            process.cwd(),
-            {},
-          )
-        : undefined,
-    outputSchema: config.outputSchema,
-    allowedTools: config.allowedTools,
-    disallowedTools: config.disallowedTools,
     allowSourceUpdate: config.allowSourceUpdate ?? false,
     logger: createLogger(config.logger),
   });
@@ -77,11 +63,6 @@ interface LoopConfig {
   readonly reporter: Reporter;
   readonly maxPrompts: number;
   readonly interPromptPause: number;
-  readonly systemPrompt?: string | undefined;
-  readonly outputSchema?: OutputSchema | undefined;
-  readonly allowedTools?: ReadonlyArray<string> | undefined;
-  readonly disallowedTools?: ReadonlyArray<string> | undefined;
-  readonly mcpServers?: Record<string, McpServerConfig> | undefined;
   readonly allowSourceUpdate: boolean;
   readonly logger: Logger;
 }
@@ -100,11 +81,6 @@ async function loopImpl(config: LoopConfig): Promise<string> {
     reporter,
     maxPrompts,
     interPromptPause,
-    systemPrompt,
-    outputSchema,
-    allowedTools,
-    disallowedTools,
-    mcpServers,
     allowSourceUpdate,
     logger,
   } = config;
@@ -128,24 +104,7 @@ async function loopImpl(config: LoopConfig): Promise<string> {
     logger.state(`Begin: ${prompt.id}`);
     await loopState.begin(prompt.id);
 
-    const result = await agent.invoke(prompt.prompt, {
-      ...(systemPrompt !== undefined
-        ? /* istanbul ignore next */ { systemPrompt }
-        : {}),
-      ...(outputSchema !== undefined
-        ? /* istanbul ignore next */ { outputSchema }
-        : {}),
-      ...(allowedTools !== undefined
-        ? /* istanbul ignore next */ { allowedTools }
-        : {}),
-      ...(disallowedTools !== undefined
-        ? /* istanbul ignore next */ { disallowedTools }
-        : {}),
-      ...(mcpServers !== undefined
-        ? /* istanbul ignore next */ { mcpServers }
-        : {}),
-      logger,
-    });
+    const result = await agent.invoke(prompt.prompt, { logger });
     await reporter.append(prompt, result);
     await loopState.end(prompt.id, result);
     logger.state(`End: ${prompt.id} (${result.status})`);

@@ -3,7 +3,6 @@ import { dirname, resolve } from 'node:path';
 
 import { normalizePromptGeneratorSpec } from '../prompt-generators.js';
 import type { LoopCliConfig } from '../types.js';
-import { expandIncludes } from './expand-prompt.js';
 
 /**
  * These are the properties that parseArgs understands
@@ -101,11 +100,6 @@ export async function normalizeCliConfig(
   return {
     ...config,
     ...(config.outputDir === undefined ? { outputDir: configDir } : {}),
-    ...(config.systemPrompt !== undefined
-      ? {
-          systemPrompt: await expandIncludes(config.systemPrompt, configDir),
-        }
-      : {}),
     promptGenerator: normalizePromptGeneratorSpec(config.promptGenerator, {
       configDir,
     }),

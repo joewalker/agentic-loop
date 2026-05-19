@@ -2,7 +2,7 @@ import { ClaudeSDKAgent } from './agents/claude-sdk.js';
 import { CodexCLIAgent } from './agents/codex-cli.js';
 import { TestAgent } from './agents/test.js';
 import type { Logger } from './loggers.js';
-import type { InvokeResult, OutputSchema } from './types.js';
+import type { InvokeResult } from './types.js';
 
 /**
  * Options passed to `Agent.invoke()` alongside the prompt.
@@ -12,30 +12,6 @@ import type { InvokeResult, OutputSchema } from './types.js';
  * agent instance itself.
  */
 export interface InvokeOptions {
-  /**
-   * Optional system prompt prepended to the conversation.
-   */
-  readonly systemPrompt?: string;
-
-  /**
-   * When provided the agent should return structured data conforming to
-   * this JSON Schema rather than (or in addition to) free-form text.
-   * Not all agents support this; unsupported agents may ignore it.
-   */
-  readonly outputSchema?: OutputSchema;
-
-  /**
-   * Tool names that should be auto-allowed without prompting for
-   * permission. When omitted the agent falls back to its own defaults.
-   */
-  readonly allowedTools?: ReadonlyArray<string>;
-
-  /**
-   * Tool names that are explicitly blocked. The agent must ensure these
-   * tools cannot be invoked.
-   */
-  readonly disallowedTools?: ReadonlyArray<string>;
-
   /**
    * When provided, the agent emits diagnostic messages (tool use, assistant
    * text, etc.) through this logger.

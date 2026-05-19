@@ -1,7 +1,16 @@
-import { query, type McpServerConfig } from '@anthropic-ai/claude-agent-sdk';
+import {
+  query,
+  type McpServerConfig,
+  type Options,
+} from '@anthropic-ai/claude-agent-sdk';
 
 import type { Agent, InvokeOptions } from '../agents.js';
-import type { InvokeResult, SuccessfulInvocationResult } from '../types.js';
+import type {
+  InvokeResult,
+  OutputSchema,
+  SuccessfulInvocationResult,
+} from '../types.js';
+import { expandPrompt } from '../util/expand-prompt.js';
 
 // istanbul ignore file
 
@@ -11,6 +20,30 @@ const DEFAULT_MAX_TURNS = 100;
 const permissionMode = 'acceptEdits'; // 'bypassPermissions'
 
 export interface ClaudeSDKAgentConfig {
+  /**
+   * Optional system prompt prepended to the conversation.
+   */
+  readonly systemPrompt?: string;
+
+  /**
+   * When provided the agent should return structured data conforming to
+   * this JSON Schema rather than (or in addition to) free-form text.
+   * Not all agents support this; unsupported agents may ignore it.
+   */
+  readonly outputSchema?: OutputSchema;
+
+  /**
+   * Tool names that should be auto-allowed without prompting for
+   * permission. When omitted the agent falls back to its own defaults.
+   */
+  readonly allowedTools?: ReadonlyArray<string>;
+
+  /**
+   * Tool names that are explicitly blocked. The agent must ensure these
+   * tools cannot be invoked.
+   */
+  readonly disallowedTools?: ReadonlyArray<string>;
+
   /**
    * MCP (Model Context Protocol) server configurations.
    * Keys are server names, values are server configurations.
@@ -32,57 +65,36 @@ export class ClaudeSDKAgent implements Agent {
   static readonly agentName = 'claude-sdk';
 
   static async create(config?: ClaudeSDKAgentConfig): Promise<Agent> {
-    return new ClaudeSDKAgent(config);
+    const options = await configureQueryOptions(config ?? {});
+    return new ClaudeSDKAgent(config ?? {}, options);
   }
 
-  #config: ClaudeSDKAgentConfig;
+  readonly #config: ClaudeSDKAgentConfig;
+  readonly #options: Options;
 
-  constructor(config?: ClaudeSDKAgentConfig) {
+  constructor(config: ClaudeSDKAgentConfig, options: Options) {
     this.#config = config ?? {};
+    this.#options = options;
   }
 
-  async invoke(prompt: string, options: InvokeOptions): Promise<InvokeResult> {
-    const {
-      logger,
-      allowedTools,
-      systemPrompt,
-      outputSchema,
-      disallowedTools,
-    } = options;
+  async invoke(
+    prompt: string,
+    invokeOptions: InvokeOptions,
+  ): Promise<InvokeResult> {
+    const { logger } = invokeOptions;
 
     const stderrChunks: Array<string> = [];
     try {
       const textParts: Array<string> = [];
       let structuredOutput: unknown;
 
-      const { tools, allowedTools: allowedToolPatterns } = splitAllowedTools(
-        allowedTools ?? DEFAULT_TOOLS,
-      );
       const messages = query({
         prompt,
         options: {
-          tools: [...tools],
-          allowedTools: [...allowedToolPatterns],
-          permissionMode,
-          maxTurns: this.#config.maxTurns ?? DEFAULT_MAX_TURNS,
+          ...this.#options,
           stderr: (data: string) => {
             stderrChunks.push(data);
           },
-          ...(systemPrompt !== undefined ? { systemPrompt } : {}),
-          ...(outputSchema !== undefined
-            ? {
-                outputFormat: {
-                  type: 'json_schema' as const,
-                  schema: outputSchema,
-                },
-              }
-            : {}),
-          ...(disallowedTools !== undefined
-            ? { disallowedTools: [...disallowedTools] }
-            : {}),
-          ...(this.#config?.mcpServers !== undefined
-            ? { mcpServers: this.#config.mcpServers }
-            : {}),
         },
       });
 
@@ -232,17 +244,56 @@ export class ClaudeSDKAgent implements Agent {
  * pulls bare names (stripping any `(...)` suffix) for `tools`, deduplicates
  * them, and returns the original list unchanged for `allowedTools`.
  */
-export function splitAllowedTools(input: ReadonlyArray<string>): {
-  readonly tools: ReadonlyArray<string>;
-  readonly allowedTools: ReadonlyArray<string>;
-} {
+export async function configureQueryOptions(
+  config: ClaudeSDKAgentConfig,
+): Promise<Options> {
+  const tools = config.allowedTools ?? DEFAULT_TOOLS;
   const bareNames = new Set<string>();
-  for (const entry of input) {
-    const parenIdx = entry.indexOf('(');
-    const bare = (parenIdx === -1 ? entry : entry.slice(0, parenIdx)).trim();
+  for (const tool of tools) {
+    const parenIdx = tool.indexOf('(');
+    const bare = (parenIdx === -1 ? tool : tool.slice(0, parenIdx)).trim();
     if (bare.length > 0) {
       bareNames.add(bare);
     }
   }
-  return { tools: [...bareNames], allowedTools: [...input] };
+
+  const systemPrompt =
+    config.systemPrompt != null
+      ? /* istanbul ignore next */ {
+          systemPrompt: await expandPrompt(
+            config.systemPrompt,
+            process.cwd(),
+            {},
+          ),
+        }
+      : {};
+
+  const outputSchema =
+    config.outputSchema !== undefined
+      ? {
+          outputFormat: {
+            type: 'json_schema' as const,
+            schema: config.outputSchema,
+          },
+        }
+      : {};
+
+  const disallowedTools =
+    config.disallowedTools !== undefined
+      ? { disallowedTools: [...config.disallowedTools] }
+      : {};
+
+  const mcpServers =
+    config?.mcpServers !== undefined ? { mcpServers: config.mcpServers } : {};
+
+  return {
+    tools: [...bareNames],
+    allowedTools: [...tools],
+    ...systemPrompt,
+    ...outputSchema,
+    ...disallowedTools,
+    ...mcpServers,
+    permissionMode,
+    maxTurns: config.maxTurns ?? DEFAULT_MAX_TURNS,
+  };
 }

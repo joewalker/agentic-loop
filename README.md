@@ -93,10 +93,8 @@ Field         | Required | Default | Description
 `reporter`         | no  | YAML | Which reporter to use (see Reporters below)
 `maxPrompts`       | no  | ∞    | Stop after processing this many prompts
 `interPromptPause` | no  | 5    | Seconds to pause between prompts (helps with rate limits)
-`systemPrompt`     | no  |      | System prompt passed to the agent. In CLI JSON configs, `{{include:path}}` macros resolve relative to the config file; programmatic calls resolve relative to cwd
-`outputSchema`     | no  |      | JSON Schema for structured output (agent support varies)
-`allowedTools`     | no  | see agent | Tool names auto-allowed without permission prompts
-`disallowedTools`  | no  |      | Tool names to block entirely
+
+Agent-specific options (system prompt, output schema, tool allow/deny lists, MCP servers) live on the agent config tuple. See [Agents](#agents) below.
 
 ## Schema
 
@@ -139,21 +137,34 @@ An agent wraps an LLM or CLI tool. The loop calls its `invoke()` method once per
 
 Specify an agent in configuration as:
 - A string name: `"claude-sdk"`
-- A name with config: `["claude-sdk", { "mcpServers": { ... } }]`
+- A name with config: `["claude-sdk", { "allowedTools": [...] }]`
 
 ### `claude-sdk`
 
 Uses the Claude Agent SDK (`@anthropic-ai/claude-agent-sdk`). This is the primary agent for most tasks.
 
 - Default tools: `Read`, `Glob`, `Grep`
-- Default max turns: 5
+- Default max turns: 100
 - Permission mode: `acceptEdits`
-- Supports: `systemPrompt`, `outputSchema`, `allowedTools`, `disallowedTools`, MCP servers
 
-Config example with MCP servers:
+Config fields (all optional):
+
+Field             | Description
+------------------|------------
+`systemPrompt`    | System prompt prepended to the conversation. Supports `{{include:path}}` macros.
+`outputSchema`    | JSON Schema describing the expected shape of structured output.
+`allowedTools`    | Tool names auto-allowed without permission prompts. Falls back to the defaults above when omitted.
+`disallowedTools` | Tool names that are explicitly blocked.
+`mcpServers`      | MCP (Model Context Protocol) server configurations, keyed by server name.
+`maxTurns`        | Maximum tool-use/response rounds per prompt.
+
+Config example:
 
 ```json
-["claude-sdk", { "mcpServers": { "my-server": { "command": "node", "args": ["server.js"] } } }]
+["claude-sdk", {
+  "allowedTools": ["Read", "Glob", "Grep", "Bash(gh issue *)"],
+  "mcpServers": { "my-server": { "command": "node", "args": ["server.js"] } }
+}]
 ```
 
 Source: `src/agents/claude-sdk.ts`
@@ -165,7 +176,7 @@ Invokes the Codex CLI (`codex exec`) as an external process.
 - The `codex` binary must be installed, authenticated, and available on `PATH`
 - Sandbox mode: read-only
 - Custom model via `CODEX_MODEL` environment variable
-- Does not support `allowedTools`, `disallowedTools`, or `outputSchema` (warns and ignores)
+- Takes no configuration
 
 Config example:
 
@@ -636,7 +647,7 @@ All extension-relevant types are exported from the package root (`src/index.ts`)
 
 ### Include Macros
 
-Both prompt templates and system prompts support `{{include:path}}` macros. Prompt template includes are resolved relative to `basePath`. For CLI JSON configs, omitted `basePath` values default to the config file directory and `systemPrompt` includes are expanded relative to that same directory. Programmatic callers that omit `basePath` continue to resolve includes relative to cwd. Circular includes are detected and throw an error. This is useful for sharing common instructions across prompts.
+Both prompt templates and the `claude-sdk` agent's `systemPrompt` support `{{include:path}}` macros. Prompt template includes are resolved relative to `basePath` (which defaults to the config file directory when loaded via the CLI, or cwd for programmatic callers). System prompt includes are resolved relative to cwd. Circular includes are detected and throw an error. This is useful for sharing common instructions across prompts.
 
 See `src/util/expand-prompt.ts` for the implementation.
 

@@ -26,22 +26,12 @@ export class CodexCLIAgent implements Agent {
     return new CodexCLIAgent();
   }
 
-  #hasWarned = false;
-
   /**
    * Invoke the Codex CLI for a single file and return the final agent output.
    */
   async invoke(prompt: string, options?: InvokeOptions): Promise<InvokeResult> {
-    if (!this.#hasWarned) {
-      this.#hasWarned = CodexCLIAgent.#warnUnsupportedOptions(options);
-    }
-
     const outputPath = createOutputPath();
-    const fullPrompt =
-      options?.systemPrompt !== undefined
-        ? `${options.systemPrompt}\n\n${prompt}`
-        : prompt;
-    const args = buildCommandArgs(outputPath, fullPrompt);
+    const args = buildCommandArgs(outputPath, prompt);
 
     try {
       const codexResult = await runCodex(args, options?.logger);
@@ -73,25 +63,6 @@ export class CodexCLIAgent implements Agent {
         // Best effort cleanup for temp file
       }
     }
-  }
-
-  /**
-   * Log a warning if unsupported options are present. Returns `true` when a
-   * warning was emitted so the caller can avoid repeating it.
-   */
-  static #warnUnsupportedOptions(options?: InvokeOptions): boolean {
-    const unsupported: Array<string> = [
-      ...(options?.allowedTools != null ? ['allowedTools'] : []),
-      ...(options?.disallowedTools != null ? ['disallowedTools'] : []),
-      ...(options?.outputSchema != null ? ['outputSchema'] : []),
-    ];
-    if (unsupported.length > 0) {
-      console.warn(
-        `[codex-cli] Ignoring unsupported options: ${unsupported.join(', ')}`,
-      );
-      return true;
-    }
-    return false;
   }
 }
 

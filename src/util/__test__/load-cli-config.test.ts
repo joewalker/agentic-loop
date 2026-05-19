@@ -1413,52 +1413,6 @@ describe('loadCliConfig', () => {
       ),
     ).rejects.toThrow('batch.batchSize must be a positive integer');
   });
-
-  it('should resolve system prompt includes relative to the config file', async () => {
-    const configDir = join(tempDir, 'config');
-    const cwdDir = join(tempDir, 'cwd');
-    await mkdir(join(configDir, 'partials'), { recursive: true });
-    await mkdir(cwdDir, { recursive: true });
-    process.chdir(cwdDir);
-
-    await writeFile(
-      join(configDir, 'partials', 'nested.md'),
-      'Nested system instructions.',
-    );
-    await writeFile(
-      join(configDir, 'system.md'),
-      'System preface.\n{{include:partials/nested.md}}',
-    );
-    await writeFile(
-      join(configDir, 'config.json'),
-      `${JSON.stringify(
-        {
-          name: 'test',
-          agent: 'test',
-          promptGenerator: [
-            'per-file',
-            {
-              filePattern: 'src/**/*.ts',
-              promptTemplate: 'Review {{file}}',
-            },
-          ],
-          systemPrompt: 'Header\n{{include:system.md}}\nFooter',
-        },
-        null,
-        2,
-      )}\n`,
-    );
-
-    const config = await loadCliConfig({
-      configPath: join(configDir, 'config.json'),
-      verbose: false,
-      maxPrompts: undefined,
-    });
-
-    expect(config.systemPrompt).toBe(
-      'Header\nSystem preface.\nNested system instructions.\nFooter',
-    );
-  });
 });
 
 function getPerFileTask(config: LoopCliConfig): PerFileTask {

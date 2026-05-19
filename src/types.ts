@@ -93,33 +93,6 @@ export interface LoopCliConfig {
   readonly interPromptPause?: number;
 
   /**
-   * An optional system prompt to pass to the agent. Supports
-   * `{{include:path}}` macros. When loaded from a CLI JSON config, these are
-   * resolved relative to the config file. Programmatic callers continue to
-   * resolve them relative to the current working directory.
-   */
-  readonly systemPrompt?: string;
-
-  /**
-   * An optional JSON Schema describing the expected shape of the agent's
-   * output. When provided, the SDK returns structured data conforming to
-   * the schema instead of (or in addition to) free-form text.
-   */
-  readonly outputSchema?: OutputSchema;
-
-  /**
-   * Tool names that are auto-allowed without prompting for permission.
-   * When omitted, the agent uses its own defaults.
-   */
-  readonly allowedTools?: ReadonlyArray<string>;
-
-  /**
-   * Tool names that are disallowed. These tools will be removed from the
-   * model's context and cannot be used.
-   */
-  readonly disallowedTools?: ReadonlyArray<string>;
-
-  /**
    * When true, the loop checks that the working directory is clean before
    * starting, allows agents to make source changes, and commits after each
    * successful prompt. When false (the default), git state is ignored and

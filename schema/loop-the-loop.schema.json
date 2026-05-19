@@ -40,24 +40,6 @@
       "default": 5,
       "description": "Seconds to pause between prompts. Helps with rate limits."
     },
-    "systemPrompt": {
-      "type": "string",
-      "description": "Optional system prompt passed to the agent. Supports {{include:path}} macros resolved relative to the config file."
-    },
-    "outputSchema": {
-      "type": "object",
-      "description": "JSON Schema describing the expected shape of structured output. Agent support varies."
-    },
-    "allowedTools": {
-      "type": "array",
-      "items": { "type": "string" },
-      "description": "Tool names auto-allowed without permission prompts. Agent-specific defaults apply when omitted."
-    },
-    "disallowedTools": {
-      "type": "array",
-      "items": { "type": "string" },
-      "description": "Tool names to block entirely."
-    },
     "allowSourceUpdate": {
       "type": "boolean",
       "default": false,
@@ -93,6 +75,24 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
+        "systemPrompt": {
+          "type": "string",
+          "description": "Optional system prompt prepended to the conversation. Supports {{include:path}} macros."
+        },
+        "outputSchema": {
+          "type": "object",
+          "description": "JSON Schema describing the expected shape of structured output. When provided, the SDK returns structured data conforming to the schema."
+        },
+        "allowedTools": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Tool names auto-allowed without permission prompts. Agent-specific defaults apply when omitted."
+        },
+        "disallowedTools": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Tool names that are explicitly blocked."
+        },
         "mcpServers": {
           "type": "object",
           "description": "MCP (Model Context Protocol) server configurations. Keys are server names, values are server configs.",
