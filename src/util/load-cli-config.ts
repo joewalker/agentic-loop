@@ -100,9 +100,14 @@ export async function normalizeCliConfig(
   const resolvedPath = resolve(configPath);
   const configDir = dirname(resolvedPath);
 
+  const outputDir =
+    config.outputDir === undefined
+      ? configDir
+      : resolve(configDir, config.outputDir);
+
   return {
     ...config,
-    ...(config.outputDir === undefined ? { outputDir: configDir } : {}),
+    outputDir,
     agent: await normalizeAgentSpec(config.agent, configDir),
     promptGenerator: normalizePromptGeneratorSpec(config.promptGenerator, {
       configDir,

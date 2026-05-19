@@ -659,6 +659,29 @@ describe('loadCliConfig', () => {
     expect(config.outputDir).toBe(outputDir);
   });
 
+  it('should resolve a relative outputDir against the config file directory', async () => {
+    const configDir = join(tempDir, 'config');
+    const cwdDir = join(tempDir, 'cwd');
+    await mkdir(configDir, { recursive: true });
+    await mkdir(cwdDir, { recursive: true });
+    process.chdir(cwdDir);
+
+    const config = await normalizeCliConfig(
+      {
+        name: 'test',
+        agent: 'test',
+        outputDir: 'reports',
+        promptGenerator: [
+          'per-file',
+          { filePattern: '**/*.ts', promptTemplate: 'Review {{file}}' },
+        ],
+      },
+      join(configDir, 'config.json'),
+    );
+
+    expect(config.outputDir).toBe(join(configDir, 'reports'));
+  });
+
   it('should accept a Bugzilla change date already parsed as a Date', async () => {
     const configDir = join(tempDir, 'config');
     const from = new Date(Date.UTC(2025, 0, 15));

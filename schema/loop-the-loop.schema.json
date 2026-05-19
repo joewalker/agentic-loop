@@ -18,7 +18,7 @@
     },
     "outputDir": {
       "type": "string",
-      "description": "Directory for report and state files. Defaults to the config file directory when loaded via the CLI."
+      "description": "Directory for report and state files. Defaults to the config file directory when loaded via the CLI. Relative paths are resolved against the config file directory."
     },
     "agent": {
       "$ref": "#/definitions/agentSpec"
