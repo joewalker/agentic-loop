@@ -1,8 +1,4 @@
-import { loadEnvFile } from 'node:process';
-
 import { loop } from 'loop-the-loop';
-
-loadEnvFile();
 
 await loop({
   name: 'review',
