@@ -30,4 +30,13 @@ describe('createAgent', () => {
     const agent = await createAgent(['claude-sdk', { maxTurns: 1 }]);
     expect(agent).toBeInstanceOf(ClaudeSDKAgent);
   });
+
+  it('should throw a descriptive error for an unknown agent name in a tuple', async () => {
+    const spec = ['does-not-exist'] as unknown as Parameters<
+      typeof createAgent
+    >[0];
+    await expect(createAgent(spec)).rejects.toThrow(
+      /Unknown agent 'does-not-exist'/,
+    );
+  });
 });

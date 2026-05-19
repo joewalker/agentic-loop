@@ -94,10 +94,18 @@ export async function createAgent(agentSpec: AgentSpec): Promise<Agent> {
     const creator = agentCreators[agentSpec];
     return creator();
   }
+
   if (Array.isArray(agentSpec)) {
     const [type, ...args] = agentSpec;
-    const creator = agentCreators[type] as AgentCreator;
+    const creator = agentCreators[type];
+    if (creator == null) {
+      throw new Error(
+        `Unknown agent '${type}'. Known agents: ${agentTypes.join('\n')}.`,
+      );
+    }
+
     return creator(...args);
   }
+
   return agentSpec;
 }
